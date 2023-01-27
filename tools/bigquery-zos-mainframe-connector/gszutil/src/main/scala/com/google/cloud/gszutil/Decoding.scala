@@ -748,7 +748,9 @@ object Decoding extends Logging {
         val size = s.length
         new StringAsIntDecoder(transcoder, size, filler = filler)
       case numStrRegex3(s) if s.toInt > 0 =>
-        StringAsIntDecoder(transcoder, s.toInt, filler = filler)
+        StringAsIntDecoder(transcoder, s.toInt + 1, filler = filler)
+      case numStrRegex4(s) =>
+        StringAsIntDecoder(transcoder, s.length + 1, filler = filler)
       case decRegex(p) if p.toInt >= 1 =>
         Decimal64Decoder(p.toInt, 0, filler = filler)
       case decRegex4(p) =>
@@ -778,7 +780,22 @@ object Decoding extends Logging {
       case decStrRegex2(p, s) if p.toInt >= 1 =>
         val scale = s.toInt
         val precision = p.toInt + scale
-        val size = precision
+        val size = precision + 2
+        new StringAsDecimalDecoder(transcoder, size, precision, scale, filler = filler)
+      case decStrRegex6(p, s) if p.toInt >= 1 =>
+        val scale = s.length
+        val precision = p.toInt + scale
+        val size = precision + 2
+        new StringAsDecimalDecoder(transcoder, size, precision, scale, filler = filler)
+      case decStrRegex7(p, s) =>
+        val scale = s.length
+        val precision = p.length + scale
+        val size = precision + 2
+        new StringAsDecimalDecoder(transcoder, size, precision, scale, filler = filler)
+      case decStrRegex8(p, s) =>
+        val scale = s.toInt
+        val precision = p.length + scale
+        val size = precision + 2
         new StringAsDecimalDecoder(transcoder, size, precision, scale, filler = filler)
       case decRegex3(p, s) if p.toInt >= 1 =>
         Decimal64Decoder(p.toInt, s.length, filler = filler)
@@ -808,7 +825,7 @@ object Decoding extends Logging {
         else
           UnsignedLongDecoder(8, filler = filler)
       case x =>
-        types(x)._1
+        throw new RuntimeException(s"Decoding for $x. not implemented.")
     }
   }
 
