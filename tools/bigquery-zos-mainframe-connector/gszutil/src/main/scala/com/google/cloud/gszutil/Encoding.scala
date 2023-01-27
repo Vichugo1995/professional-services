@@ -41,7 +41,7 @@ object Encoding extends Logging {
     else if (f.getTyp == FieldType.BYTES)
       BytesToBinaryEncoder(f.getSize)
     else
-      UnknownTypeEncoder
+      throw new RuntimeException(s"Decoding for FieldType ${f.getTyp} not implemented.")
   }
 
   def getEncoder(cbf: CopyBookField, transcoder: Transcoder, picTCharset: Option[String]): BinaryEncoder = {
@@ -55,6 +55,8 @@ object Encoding extends Logging {
       case numStrRegex2(_) =>
         UnsignedIntStringEncoder(transcoder, decoderSize)
       case numStrRegex3(_) =>
+        SignedIntStringEncoder(transcoder, decoderSize)
+      case numStrRegex4(_) =>
         SignedIntStringEncoder(transcoder, decoderSize)
       case decStrRegex(p, s) if p.toInt >= 1 =>
         val scale = s.toInt
@@ -72,7 +74,16 @@ object Encoding extends Logging {
         UnsignedDecimalStringEncoder(transcoder, precision + scale, scale)
       case decStrRegex2(p, s) if p.toInt >= 1 =>
         val scale = s.toInt
-        SignedDecimalStringEncoder(transcoder, p.toInt + scale, scale)
+        SignedDecimalStringEncoder(transcoder, p.toInt + scale + 2, scale)
+      case decStrRegex6(p, s) if p.toInt >= 1 =>
+        val scale = s.length
+        SignedDecimalStringEncoder(transcoder, p.toInt + scale + 2, scale)
+      case decStrRegex7(p, s) =>
+        val scale = s.length
+        SignedDecimalStringEncoder(transcoder, p.length + scale + 2, scale)
+      case decStrRegex8(p, s) =>
+        val scale = s.toInt
+        SignedDecimalStringEncoder(transcoder, p.length + scale + 2, scale)
       case charRegex2(_) =>
         LocalizedStringToBinaryEncoder(LocalizedTranscoder(picTCharset), decoderSize)
       case "PIC X" | numStrRegex(_) =>
@@ -108,10 +119,8 @@ object Encoding extends Logging {
         }
       case uintRegex(p) if p.toInt <= 18 && p.toInt >= 1 =>
         LongToBinaryEncoder(decoderSize)
-      case x if types.contains(x) =>
-        types(x)._2
-      case _ =>
-        UnknownTypeEncoder
+      case x =>
+        throw new RuntimeException(s"Encoding for $x. not implemented.")
     }
   }
 
@@ -455,19 +464,5 @@ object Encoding extends Logging {
         case bf: ByteBuffer => encode(bf.array())
         case _ => encode(value.getBytesValue)
       }
-  }
-
-  case object UnknownTypeEncoder extends BinaryEncoder {
-    override type T = Object
-
-    override def size = 0
-
-    override val bqSupportedType: StandardSQLTypeName = null
-
-    override def encode(elem: Object): Array[Byte] =
-      throw new UnsupportedOperationException()
-
-    override def encodeValue(value: FieldValue): Array[Byte] =
-      throw new UnsupportedOperationException()
   }
 }
