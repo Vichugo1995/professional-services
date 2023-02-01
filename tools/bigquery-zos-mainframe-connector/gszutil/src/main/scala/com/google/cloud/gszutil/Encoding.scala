@@ -52,6 +52,8 @@ object Encoding extends Logging {
         StringToBinaryEncoder(transcoder, decoderSize)
       case charRegex3(_) =>
         StringToBinaryEncoder(transcoder, decoderSize)
+      case numStrRegex(_) =>
+        UnsignedIntStringEncoder(transcoder, decoderSize)
       case numStrRegex2(_) =>
         UnsignedIntStringEncoder(transcoder, decoderSize)
       case numStrRegex3(_) =>
@@ -86,7 +88,7 @@ object Encoding extends Logging {
         SignedDecimalStringEncoder(transcoder, p.length + scale + 2, scale)
       case charRegex2(_) =>
         LocalizedStringToBinaryEncoder(LocalizedTranscoder(picTCharset), decoderSize)
-      case "PIC X" | numStrRegex(_) =>
+      case "PIC X" =>
         StringToBinaryEncoder(transcoder, decoderSize)
       case bytesRegex(s) =>
         BytesToBinaryEncoder(s.toInt)

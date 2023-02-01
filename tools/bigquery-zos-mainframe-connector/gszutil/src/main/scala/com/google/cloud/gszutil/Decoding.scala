@@ -743,7 +743,7 @@ object Decoding extends Logging {
       case bytesRegex(s) =>
         new BytesDecoder(s.toInt, filler)
       case numStrRegex(size) =>
-        new StringDecoder(transcoder, size.toInt, filler = filler)
+        new StringAsIntDecoder(transcoder, size.toInt, filler = filler)
       case numStrRegex2(s) =>
         val size = s.length
         new StringAsIntDecoder(transcoder, size, filler = filler)
