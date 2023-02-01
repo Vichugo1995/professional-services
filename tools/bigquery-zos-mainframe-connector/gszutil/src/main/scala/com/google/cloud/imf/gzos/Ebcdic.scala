@@ -31,7 +31,8 @@ case object Ebcdic extends Transcoder {
         System.out.println(s"Using Charset '$charset'")
         Charset.forName(charset)
       case None =>
-        new EBCDIC1()
+        System.out.println(s"Using default Charset 'Cp037'")
+        Charset.forName("Cp037")
     }
   }
   override val SP: Byte = 0x40

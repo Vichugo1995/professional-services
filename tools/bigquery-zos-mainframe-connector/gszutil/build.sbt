@@ -16,7 +16,7 @@
  */
 organization := "com.google.cloud.imf"
 name := "mainframe-connector"
-version := "5.7.10"
+version := "5.7.11"
 
 scalaVersion := "2.13.10"
 
@@ -78,7 +78,7 @@ Test / testOptions := Seq(Tests.Filter(!_.endsWith("ITSpec")))
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
 scalacOptions ++= Seq(
-  "-target:jvm-1.8",
+  "-release", "8",
   "-deprecation",
   "-opt-warnings",
   "-feature"
