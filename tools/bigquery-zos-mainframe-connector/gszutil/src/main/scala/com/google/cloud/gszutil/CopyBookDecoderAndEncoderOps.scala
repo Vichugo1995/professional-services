@@ -16,8 +16,6 @@
 
 package com.google.cloud.gszutil
 
-import com.google.cloud.gszutil.Decoding.Decimal64Decoder
-import com.google.cloud.gszutil.Encoding.DecimalToBinaryEncoder
 
 object CopyBookDecoderAndEncoderOps {
   // Note: omit trailing '.' because it will be removed prior to regex matching
@@ -29,10 +27,10 @@ object CopyBookDecoderAndEncoderOps {
   val numStrRegex2 = """PIC (9{1,9})""".r
   val numStrRegex3 = """PIC \+9\((\d{1,3})\)""".r
   val numStrRegex4 = """PIC \+(9{1,3})""".r
-  val decStrRegex = """PIC 9\((\d{1,3})\)V9\((\d{1,3})\)""".r
-  val decStrRegex3 = """PIC 9\((\d{1,3})\)V(9{1,7})""".r
-  val decStrRegex4 = """PIC (9{1,9})V(9{1,9})""".r
-  val decStrRegex5 = """PIC (9{1,9})V9\((\d{1,3})\)""".r
+  val decStrRegex = """PIC S{0,1}9\((\d{1,3})\)V9\((\d{1,3})\)""".r
+  val decStrRegex3 = """PIC S{0,1}9\((\d{1,3})\)V(9{1,7})""".r
+  val decStrRegex4 = """PIC S{0,1}(9{1,9})V(9{1,9})""".r
+  val decStrRegex5 = """PIC S{0,1}(9{1,9})V9\((\d{1,3})\)""".r
   val decStrRegex2 = """PIC \+9\((\d{1,3})\)\.9\((\d{1,3})\)""".r
   val decStrRegex6 = """PIC \+9\((\d{1,3})\)\.(9{1,3})""".r
   val decStrRegex7 = """PIC \+(9{1,3})\.(9{1,3})""".r

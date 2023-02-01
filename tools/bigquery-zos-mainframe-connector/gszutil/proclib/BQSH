@@ -44,6 +44,12 @@ export GKEYFILE="/path/to/keyfile.json"
 GOOGLE_DIR="/opt/google/mainframe-connector/latest/lib"
 GOOGLE_CLASSPATH="$GOOGLE_DIR/*"
 
+# Default Encoding
+# If your site uses an encoding other than EBCDIC US,
+# edit this line to set the default encoding
+# See "Supported Encodings" in Java documentation for charset names.
+#ENCODING=Cp037
+
 # Do not modify the 3 lines below
 # Collect system symbols from JES
 export JOBNAME=&JOBNAME
@@ -89,7 +95,7 @@ export LIBPATH="$LP:/usr/lib/java_runtime64"
 
 # Java Classpath
 CP="$JL:$JL/ext:/usr/include/java_classes/*"
-export CLASSPATH="$CP:GOOGLE_CLASSPATH"
+export CLASSPATH="$CP:$GOOGLE_CLASSPATH"
 
 # JVM options
 IJO="-Xms512m -Xmx512m -Xcompressedrefs -Djava.net.preferIPv4Stack=true"
