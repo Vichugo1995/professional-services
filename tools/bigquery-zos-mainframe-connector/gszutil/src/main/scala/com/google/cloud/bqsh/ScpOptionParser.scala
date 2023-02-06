@@ -45,6 +45,10 @@ object ScpOptionParser extends OptionParser[ScpConfig]("scp") with ArgParser[Scp
     .text("(optional) compress output with gzip (default: disabled)")
     .action((_,c) => c.copy(compress = true))
 
+  opt[Unit]("noCompress")
+    .text("(optional) disable compress output with gzip (default: disabled, this option is retained for compatibility)")
+    .action((_,c) => c.copy(compress = false))
+
   opt[String]("inDD")
     .text("DD to be uploaded (INFILE will be used if not provided)")
     .action((x,c) => c.copy(inDD = x))
