@@ -111,7 +111,7 @@ object Scp extends Command[ScpConfig] with Logging {
       if (prefix.endsWith("/")) {
         s"$prefix$dsn"
       } else {
-        s"$prefix/$dsn"
+        s"$prefix"
       }
     }
   }
@@ -132,7 +132,7 @@ object Scp extends Command[ScpConfig] with Logging {
       // explicitly provided output URI takes precedence
       if (config.gcsOutUri.nonEmpty) {
         logger.info(s"writing to output location: ${config.gcsOutUri}")
-        mkOutUri(config.gcsOutUri, config.inDsn, memberName)
+        mkOutUri(config.gcsOutUri, in.getDsn, memberName)
       } else {
         // otherwise, check CloudDataSet prefixes
         CloudDataSet.getUri(DataSetInfo(in.getDsn)) match {
@@ -251,6 +251,6 @@ object Scp extends Command[ScpConfig] with Logging {
 
   def openGcsBlobGzip(gcs: Storage, blobInfo: BlobInfo): OutputStream = {
     logger.info(s"opening Cloud Storage Writer (gzip):\n$blobInfo")
-    new BufferedOutputStream(new GZIPOutputStream(Channels.newOutputStream(gcs.writer(blobInfo)), 32 * 1024, true), 256 * 1024)
+    new GZIPOutputStream(Channels.newOutputStream(gcs.writer(blobInfo, Storage.BlobWriteOption.disableGzipContent())), 32 * 1024, false)
   }
 }
