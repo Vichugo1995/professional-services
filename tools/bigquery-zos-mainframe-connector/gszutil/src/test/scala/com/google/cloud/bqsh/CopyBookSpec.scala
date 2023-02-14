@@ -60,6 +60,8 @@ class CopyBookSpec extends AnyFlatSpec with Logging {
     "PIC 9(9)V9(5)." -> (new StringAsDecimalDecoder(Ebcdic, 14, 14, 5), UnsignedDecimalStringEncoder(transcoder, 14,5)),
     "PIC 9(10)V9(2)." -> (new StringAsDecimalDecoder(Ebcdic, 12, 12, 2), UnsignedDecimalStringEncoder(transcoder, 12,2)),
     "PIC +9(7).9(4)." -> (new StringAsDecimalDecoder(Ebcdic, 13, 11, 4), SignedDecimalStringEncoder(transcoder, 13,4)),
+    "PIC S9(7).9(4)." -> (new StringAsDecimalDecoder(Ebcdic, 12, 11, 4), SignedDecimalStringEncoder(transcoder, 12,4)),
+    "PIC 9(7).9(4)." -> (new StringAsDecimalDecoder(Ebcdic, 12, 11, 4), SignedDecimalStringEncoder(transcoder, 12,4)),
     "PIC +9(12).999." -> (new StringAsDecimalDecoder(Ebcdic, 17, 15, 3), SignedDecimalStringEncoder(transcoder, 17,3)),
     "PIC +999.999." -> (new StringAsDecimalDecoder(Ebcdic, 8, 6, 3), SignedDecimalStringEncoder(transcoder, 8,3)),
     "PIC +999.9(3)." -> (new StringAsDecimalDecoder(Ebcdic, 8, 6, 3), SignedDecimalStringEncoder(transcoder, 8,3)),
