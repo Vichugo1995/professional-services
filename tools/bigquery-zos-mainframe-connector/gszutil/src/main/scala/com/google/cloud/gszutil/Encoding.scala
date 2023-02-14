@@ -80,6 +80,12 @@ object Encoding extends Logging {
       case decStrRegex6(p, s) if p.toInt >= 1 =>
         val scale = s.length
         SignedDecimalStringEncoder(transcoder, p.toInt + scale + 2, scale)
+      case decStrRegex9(p, s) if p.toInt >= 1 =>
+        val scale = s.toInt
+        SignedDecimalStringEncoder(transcoder, p.toInt + scale + 1, scale)
+      case decStrRegex10(p, s) if p.toInt >= 1 =>
+        val scale = s.length
+        SignedDecimalStringEncoder(transcoder, p.toInt + scale + 1, scale)
       case decStrRegex7(p, s) =>
         val scale = s.length
         SignedDecimalStringEncoder(transcoder, p.length + scale + 2, scale)
