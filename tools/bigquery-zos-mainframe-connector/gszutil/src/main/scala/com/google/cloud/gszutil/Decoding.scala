@@ -813,6 +813,10 @@ object Decoding extends Logging {
         Decimal64Decoder(p.length, s.length, filler = filler)
       case decRegex6(p, s) if s.toInt >= 1 =>
         Decimal64Decoder(p.length, s.toInt, filler = filler)
+      case decRegex7(s) if s.toInt >= 1 =>
+        Decimal64Decoder(0, s.toInt, filler = filler)
+      case decRegex8(s) =>
+        Decimal64Decoder(0, s.length, filler = filler)
       case "PIC S9 COMP" =>
         new LongDecoder(2, filler = filler)
       case "PIC 9 COMP" =>
