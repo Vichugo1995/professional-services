@@ -45,4 +45,6 @@ object CopyBookDecoderAndEncoderOps {
   val decRegex3 = """PIC S9\((\d{1,3})\)V(9{1,9}) COMP-3""".r
   val decRegex5 = """PIC S(9{1,9})V(9{1,9}) COMP-3""".r
   val decRegex6 = """PIC S(9{1,9})V9\((\d{1,3})\) COMP-3""".r
+  val decRegex7 = """PIC SV9\((\d{1,3})\) COMP-3""".r
+  val decRegex8 = """PIC SV(9{1,9}) COMP-3""".r
 }

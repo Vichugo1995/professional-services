@@ -116,6 +116,12 @@ object Encoding extends Logging {
       case decRegex6(p, _) if cbf.decoder.isInstanceOf[Decimal64Decoder] =>
         val dec = cbf.decoder.asInstanceOf[Decimal64Decoder]
         DecimalToBinaryEncoder(dec.p, dec.s)
+      case decRegex7(_) if cbf.decoder.isInstanceOf[Decimal64Decoder] =>
+        val dec = cbf.decoder.asInstanceOf[Decimal64Decoder]
+        DecimalToBinaryEncoder(dec.p, dec.s)
+      case decRegex8(_) if cbf.decoder.isInstanceOf[Decimal64Decoder] =>
+        val dec = cbf.decoder.asInstanceOf[Decimal64Decoder]
+        DecimalToBinaryEncoder(dec.p, dec.s)
       case "PIC S9 COMP" | "PIC 9 COMP" =>
         LongToBinaryEncoder(decoderSize)
       case intRegex(p) if p.toInt <= 18 && p.toInt >= 1 =>
