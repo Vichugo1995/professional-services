@@ -61,6 +61,7 @@ object Bqsh extends Logging {
 
     // date '+%Y%m%d' YYYYMMDD
     env.put("DATE", format(t,"uuuuMMdd"))
+    env.put("DATE2", format(t,"uuuu-MM-dd"))
 
     // date '+%Y%m%d%H%M%S' YYYYMMDDHHMMSS
     // timestamp at second resolution
