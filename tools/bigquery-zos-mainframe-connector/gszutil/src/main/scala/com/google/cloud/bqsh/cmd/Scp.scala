@@ -25,8 +25,10 @@ import com.google.cloud.imf.gzos.MVSStorage.MVSPDSMember
 import com.google.cloud.imf.gzos.{CharsetTranscoder, CloudDataSet, DataSetInfo, MVS, MVSStorage, Util}
 import com.google.cloud.imf.util.{Logging, Services}
 import com.google.cloud.storage.{BlobId, BlobInfo, Storage}
+import com.google.common.hash.Hashing
 import com.google.common.io.CountingOutputStream
 
+import java.nio.charset.StandardCharsets
 import scala.util.{Failure, Success, Try}
 
 /** Simple binary copy
@@ -153,6 +155,8 @@ object Scp extends Command[ScpConfig] with Logging {
     val contentType = if (config.convert) "text/plain" else "application/octet-stream"
     val os: CountingOutputStream =
       new CountingOutputStream(openGcsUri(gcs, outUri, lrecl, config.compress, contentType))
+    val crc = Hashing.crc32c().newHasher()
+    val md5 = Hashing.md5().newHasher()
 
     var nRecordsRead: Long = 0
     var n = 0
@@ -161,14 +165,20 @@ object Scp extends Command[ScpConfig] with Logging {
       n = in.read(buf)
       if (config.convert) {
         val transcoder = CharsetTranscoder(config.encoding)
+        val lineBreak = "\n".getBytes(StandardCharsets.UTF_8)
         while (n > -1 && (nRecordsRead < config.limit || config.limit < 0)) {
           if (n > 0) {
             nRecordsRead += 1
             transcoder.decodeBytes(buf)
+            // checksum calculation
+            crc.putBytes(buf, 0, lrecl)
+            md5.putBytes(buf, 0, lrecl)
+            crc.putBytes(lineBreak)
+            md5.putBytes(lineBreak)
             // write converted character record
             os.write(buf, 0, lrecl)
             // append line break
-            os.write('\n')
+            os.write(lineBreak)
           }
           n = in.read(buf)
         }
@@ -177,6 +187,9 @@ object Scp extends Command[ScpConfig] with Logging {
           if (n > 0) {
             nRecordsRead += 1
             os.write(buf, 0, lrecl)
+            // checksum calculation
+            crc.putBytes(buf, 0, lrecl)
+            md5.putBytes(buf, 0, lrecl)
           }
           n = in.read(buf)
         }
@@ -193,6 +206,8 @@ object Scp extends Command[ScpConfig] with Logging {
     }
 
     val t1 = System.currentTimeMillis()
+    val crcHash = crc.hash().toString
+    val md5Hash = md5.hash().toString
 
     Option(gcs.get(blobId(outUri))) match {
       case Some(blob) =>
@@ -209,7 +224,16 @@ object Scp extends Command[ScpConfig] with Logging {
              |$blob""".stripMargin
         logger.info(msg)
 
-        Result(activityCount = nRecordsRead)
+        val blobCrc = Option(blob.getCrc32cToHexString).getOrElse("")
+        val blobMd5 = Option(blob.getMd5ToHexString).getOrElse("")
+        if (blobCrc.equalsIgnoreCase(crcHash) && blobMd5.equalsIgnoreCase(md5Hash)) {
+          logger.info(s"Verified object hash (crc32c=$crcHash md5=$md5Hash)")
+          Result(activityCount = nRecordsRead)
+        } else {
+          val errMsg = s"Object hash mismatch (expected crc32c $crcHash but got $blobCrc, expected md5 $md5Hash but got $blobMd5)"
+          logger.error(errMsg)
+          Result.Failure(errMsg)
+        }
       case None =>
         Result.Failure(s"finished writing $nRecordsRead records, ${os.getCount} bytes " +
           s"\nbut object not found at $outUri")
