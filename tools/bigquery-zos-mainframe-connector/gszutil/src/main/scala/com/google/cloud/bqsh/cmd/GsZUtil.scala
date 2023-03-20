@@ -47,13 +47,16 @@ object GsZUtil extends Command[GsZUtilConfig] with Logging {
          |--location=${c.location},
          |--dataset_id=${c.datasetId},
          |--keepAliveTimeInSeconds=${c.keepAliveTimeInSeconds}
+         |${if (c.lowerCaseColumnNames)"--lowerCaseColumnNames" else ""}
          |""".stripMargin)
 
 
     val sp: SchemaProvider =
       if (c.cobDsn.nonEmpty) {
         logger.info(s"reading copybook from DSN=${c.cobDsn}")
-        CopyBook(zos.readDSNLines(MVSStorage.parseDSN(c.cobDsn)).mkString("\n"), picTCharset = c.picTCharset)
+        CopyBook(zos.readDSNLines(MVSStorage.parseDSN(c.cobDsn)).mkString("\n"),
+          picTCharset = c.picTCharset,
+          lowerCaseColumnNames = c.lowerCaseColumnNames)
       } else {
         logger.info(s"reading copybook from DD:COPYBOOK")
         zos.loadCopyBook("COPYBOOK", c.encoding, c.picTCharset)
@@ -76,7 +79,8 @@ object GsZUtil extends Command[GsZUtilConfig] with Logging {
       datasetId = c.datasetId,
       location = c.location,
       timeOutMinutes = c.timeOutMinutes,
-      keepAliveTimeInSeconds = c.keepAliveTimeInSeconds
+      keepAliveTimeInSeconds = c.keepAliveTimeInSeconds,
+      lowerCaseColumnNames = c.lowerCaseColumnNames
     )
 
     val dsInfo: DataSetInfo = {

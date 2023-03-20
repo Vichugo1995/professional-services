@@ -28,7 +28,8 @@ import scala.collection.mutable.ArrayBuffer
 case class CopyBook(raw: String,
                     transcoder: Transcoder = Ebcdic,
                     altFields: Option[Seq[CopyBookLine]] = None,
-                    picTCharset: Option[String] = None) extends SchemaProvider {
+                    picTCharset: Option[String] = None,
+                    lowerCaseColumnNames: Boolean = false) extends SchemaProvider {
 
   final val Fields: Seq[CopyBookLine] = altFields match {
     case Some(fl) => fl
@@ -38,7 +39,8 @@ case class CopyBook(raw: String,
   override def fieldNames: Seq[String] =
     altFields.getOrElse(Fields).flatMap {
       case CopyBookField(name, decoder, _) if !decoder.filler =>
-        Option(name.replaceAllLiterally("-", "_"))
+        val sqlColumnName = name.replaceAllLiterally("-", "_")
+        Option(if (lowerCaseColumnNames) sqlColumnName.toLowerCase else sqlColumnName)
       case _ =>
         None
     }

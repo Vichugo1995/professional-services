@@ -30,4 +30,5 @@ case class GsZUtilConfig(
                           encoding: Option[String] = None,
                           picTCharset: Option[String] = None,
                           timeOutMinutes: Option[Int] = None,
-                          keepAliveTimeInSeconds: Option[Int] = None)
+                          keepAliveTimeInSeconds: Option[Int] = None,
+                          lowerCaseColumnNames: Boolean = false)

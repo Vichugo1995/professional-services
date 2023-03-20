@@ -26,7 +26,8 @@ object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgP
   override def parse(args: Seq[String], env: Map[String,String]): Option[GsUtilConfig] = {
     val envCfg = GsUtilConfig(
       remoteHost = env.getOrElse("SRVHOSTNAME",""),
-      remotePort = env.getOrElse("SRVPORT","52701").toInt
+      remotePort = env.getOrElse("SRVPORT","52701").toInt,
+      lowerCaseColumnNames = env.getOrElse("LOWERCASECOLNAMES","").equalsIgnoreCase("true")
     )
     parse(args, envCfg)
   }
@@ -43,6 +44,11 @@ object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgP
         .optional()
         .action{(_,c) => c.copy(replace = true, recursive = true)}
         .text("delete before uploading"),
+
+      opt[Unit]("lowerCaseColumnNames")
+        .optional()
+        .action{(_,c) => c.copy(lowerCaseColumnNames = true)}
+        .text("(optional) create lowercase column names for copybook fields"),
 
       opt[Int]("batchSize")
         .optional()

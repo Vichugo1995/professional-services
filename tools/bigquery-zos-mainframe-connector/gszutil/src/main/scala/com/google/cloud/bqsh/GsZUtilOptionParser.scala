@@ -25,6 +25,7 @@ with ArgParser[GsZUtilConfig]{
       gcsOutUri = env.getOrElse("GCSOUTURI", ""),
       remoteHost = env.getOrElse("SRVHOSTNAME",""),
       remotePort = env.getOrElse("SRVPORT","52701").toInt,
+      lowerCaseColumnNames = env.getOrElse("LOWERCASECOLNAMES", "").equalsIgnoreCase("true")
     )
     parse(args, envCfg)
   }
@@ -63,6 +64,11 @@ with ArgParser[GsZUtilConfig]{
     .optional()
     .text("(optional) charset used for encoding and decoding character fields. Overrides default set by ENCODING environment variable.")
     .action((x, c) => c.copy(encoding = Option(x)))
+
+  opt[Unit]("lowerCaseColumnNames")
+    .optional()
+    .text("(optional) create lowercase column names for copybook fields")
+    .action { (_, c) => c.copy(lowerCaseColumnNames = true) }
 
   opt[String]("pic_t_charset")
     .optional()

@@ -90,6 +90,7 @@ case class GsUtilConfig(source: String = "INFILE",
 
                         // Custom
                         schemaProvider: Option[SchemaProvider] = None,
+                        lowerCaseColumnNames: Boolean = false,
                         picTCharset: Option[String] = None,
                         encoding: Option[String] = None,
                         statsTable: String = "",

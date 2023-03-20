@@ -54,7 +54,8 @@ object Cp extends Command[GsUtilConfig] with Logging {
       case Some(x) => {
         logger.info("Merging copybook with provided transformations ...")
 
-        val sch = c.schemaProvider.getOrElse(zos.loadCopyBook(c.copyBook, c.encoding, c.picTCharset))
+        val sch = c.schemaProvider.getOrElse(zos.loadCopyBook(c.copyBook, c.encoding, c.picTCharset)
+          .copy(lowerCaseColumnNames = c.lowerCaseColumnNames))
         logger.info(s"Current Schema: ${sch.toString}")
 
         val newSchema = merge(sch, x)
@@ -63,7 +64,8 @@ object Cp extends Command[GsUtilConfig] with Logging {
       }
       case None => {
         logger.info("Use original copybook")
-        c.schemaProvider.getOrElse(zos.loadCopyBook(c.copyBook, c.encoding, c.picTCharset))
+        c.schemaProvider.getOrElse(zos.loadCopyBook(c.copyBook, c.encoding, c.picTCharset)
+          .copy(lowerCaseColumnNames = c.lowerCaseColumnNames))
       }
     }
     val in: ZRecordReaderT = c.testInput.getOrElse(zos.readCloudDD(c.source))
@@ -245,7 +247,7 @@ object Cp extends Command[GsUtilConfig] with Logging {
           case x =>
             x
         }
-        CopyBook(x.raw, x.transcoder, Option(newFileds), x.picTCharset)
+        CopyBook(x.raw, x.transcoder, Option(newFileds), x.picTCharset, x.lowerCaseColumnNames)
 
       case y: RecordSchema => {
         logger.info("Merging RecordSchema")
