@@ -62,7 +62,7 @@ object ScpOptionParser extends OptionParser[ScpConfig]("scp") with ArgParser[Scp
     .action((x,c) => c.copy(gcsOutUri = x))
 
   opt[String]("encoding")
-    .text("(optional) input character encoding. default: CP1037")
+    .text("(optional) input character encoding. default: CP037")
     .action((x,c) => c.copy(encoding = x, convert = true))
 
   opt[Unit]("noConvert")

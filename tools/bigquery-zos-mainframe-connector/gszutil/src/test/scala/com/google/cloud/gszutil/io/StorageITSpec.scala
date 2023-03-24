@@ -32,8 +32,10 @@
 
 package com.google.cloud.gszutil.io
 
+import com.google.cloud.bqsh.ScpConfig
 import com.google.cloud.bqsh.cmd.Scp
 import com.google.cloud.imf.grecv.server.GRecvServerListener
+import com.google.cloud.imf.gzos.{MVS, Util}
 import com.google.cloud.imf.util.Services
 import com.google.cloud.storage.BlobId
 import org.scalatest.flatspec.AnyFlatSpec
@@ -43,11 +45,22 @@ import java.nio.charset.StandardCharsets
 import scala.util.Random
 
 class StorageITSpec extends AnyFlatSpec {
+  val gcs = Services.storage()
+  val bucket = sys.env("BUCKET")
+  val zos: MVS = {
+    val z = Util.zProvider
+    z.init()
+    z
+  }
+
+  "gcloud storage cp" should "copy" in {
+    val config = ScpConfig(inDsn = "src/test/resources/testfile.ebcdic.txt", gcsOutUri = s"gs://$bucket/testfile.txt")
+    val result = Scp.run(config, zos, Map.empty)
+    assert(result.exitCode == 0)
+  }
 
   "gcs" should "serve gzip" in {
-    val gcs = Services.storage()
     val lowLevelApi = Services.storageApi(Services.storageCredentials())
-    val bucket = sys.env("BUCKET")
     val name = "test1.gz"
     val obj = Scp.openGcsUri(gcs, s"gs://$bucket/$name", 8, compress = true)
     val s0 = Random.alphanumeric.take(32).toString()

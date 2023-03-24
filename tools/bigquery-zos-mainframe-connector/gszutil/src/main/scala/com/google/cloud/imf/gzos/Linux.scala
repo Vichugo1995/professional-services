@@ -144,7 +144,19 @@ object Linux extends MVS with Logging {
   override def substituteSystemSymbols(s: String): String = s
 
   override def exists(dsn: DSN): Boolean = throw new NotImplementedError()
-  override def readDSN(dsn: DSN): ZRecordReaderT = throw new NotImplementedError()
+  override def readDSN(dsn: DSN): ZRecordReaderT = {
+    val ddPath = dsn match {
+      case MVSStorage.MVSDataset(dsn) => Paths.get(dsn)
+      case MVSStorage.MVSPDSMember(pdsDsn, member) => throw new NotImplementedError()
+    }
+    logger.info(s"Opening $ddPath")
+    val lRecl = 80
+    val blkSize = 800
+    val ddFile = ddPath.toFile
+    require(ddFile.exists, s"$ddPath does not exist")
+    require(ddFile.isFile, s"$ddPath is not a file")
+    new ChannelRecordReader(FileChannel.open(ddPath, StandardOpenOption.READ), lRecl, blkSize)
+  }
   override def readDSNLines(dsn: DSN): Iterator[String] = throw new NotImplementedError()
   override def writeDSN(dsn: DSN): ZRecordWriterT = throw new NotImplementedError()
   override def writeDD(ddName: String): ZRecordWriterT = {

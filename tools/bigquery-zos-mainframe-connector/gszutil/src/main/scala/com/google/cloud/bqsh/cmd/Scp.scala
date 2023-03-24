@@ -25,7 +25,7 @@ import com.google.cloud.imf.gzos.MVSStorage.MVSPDSMember
 import com.google.cloud.imf.gzos.{CharsetTranscoder, CloudDataSet, DataSetInfo, MVS, MVSStorage, Util}
 import com.google.cloud.imf.util.{Logging, Services}
 import com.google.cloud.storage.{BlobId, BlobInfo, Storage}
-import com.google.common.hash.Hashing
+import com.google.common.hash.{HashCode, Hashing}
 import com.google.common.io.CountingOutputStream
 
 import java.nio.charset.StandardCharsets
@@ -164,6 +164,7 @@ object Scp extends Command[ScpConfig] with Logging {
     try {
       n = in.read(buf)
       if (config.convert) {
+        logger.info(s"Data encoding ${config.encoding} will be converted to UTF-8. Line endings will be added following each $lrecl byte record.")
         val transcoder = CharsetTranscoder(config.encoding)
         val lineBreak = "\n".getBytes(StandardCharsets.UTF_8)
         while (n > -1 && (nRecordsRead < config.limit || config.limit < 0)) {
@@ -206,7 +207,7 @@ object Scp extends Command[ScpConfig] with Logging {
     }
 
     val t1 = System.currentTimeMillis()
-    val crcHash = crc.hash().toString
+    val crcHash = toString(crc.hash())
     val md5Hash = md5.hash().toString
 
     Option(gcs.get(blobId(outUri))) match {
@@ -230,7 +231,9 @@ object Scp extends Command[ScpConfig] with Logging {
           logger.info(s"Verified object hash (crc32c=$crcHash md5=$md5Hash)")
           Result(activityCount = nRecordsRead)
         } else {
-          val errMsg = s"Object hash mismatch (expected crc32c $crcHash but got $blobCrc, expected md5 $md5Hash but got $blobMd5)"
+          val errMsg = s"Unable to verify checksum on uploaded Cloud Storage object" +
+            s"\nlocal crc32c: $crcHash\nobject crc32c:$blobCrc\nlocal md5: $md5Hash\nobject md5:$blobMd5" +
+            "\nPlease retry the upload."
           logger.error(errMsg)
           Result.Failure(errMsg)
         }
@@ -245,6 +248,17 @@ object Scp extends Command[ScpConfig] with Logging {
     val m = new java.util.HashMap[String,String]()
     m.put("x-goog-meta-lrecl", s"$lrecl")
     m
+  }
+
+  private final val hexDigits: Array[Char] = "0123456789abcdef".toCharArray
+
+  // bytes are reversed relative to crc32c given by Cloud Storage
+  def toString(hashCode: HashCode): String = {
+    val bytes: Array[Byte] = hashCode.asBytes()
+    val sb = new StringBuilder(2 * bytes.length)
+    for (b <- bytes.reverseIterator)
+      sb.append(hexDigits((b >> 4) & 0xf)).append(hexDigits(b & 0xf))
+    sb.result()
   }
 
   def validateGcsUri(uri: URI): Unit = {
