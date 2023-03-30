@@ -235,6 +235,12 @@ object Scp extends Command[ScpConfig] with Logging {
             s"\nlocal crc32c: $crcHash\nobject crc32c:$blobCrc\nlocal md5: $md5Hash\nobject md5:$blobMd5" +
             "\nPlease retry the upload."
           logger.error(errMsg)
+          Try(gcs.delete(blob.getBlobId)) match {
+            case Failure(e) =>
+              logger.error(s"Failed to delete Cloud Storage object: ${e.getMessage}", e)
+            case Success(value) =>
+              logger.info("Deleted Cloud Storage object due to integrity check failure")
+          }
           Result.Failure(errMsg)
         }
       case None =>
