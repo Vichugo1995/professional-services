@@ -18,8 +18,8 @@ package com.google.cloud.imf.gzos
 
 import com.google.cloud.gszutil
 import com.google.cloud.gszutil.io.{ChannelRecordReader, ChannelRecordWriter, ZRecordReaderT, ZRecordWriterT}
-import com.google.cloud.gszutil.{CopyBook, Transcoder, Utf8}
-import com.google.cloud.imf.gzos.MVSStorage.DSN
+import com.google.cloud.gszutil.{CopyBook, Utf8}
+import com.google.cloud.imf.gzos.MVSStorage.{DSN,MVSDataset,MVSPDSMember}
 import com.google.cloud.imf.gzos.Util.DefaultCredentialProvider
 import com.google.cloud.imf.gzos.pb.GRecvProto.ZOSJobInfo
 import com.google.cloud.imf.util.{Logging, Services, StatsUtil}
@@ -56,7 +56,7 @@ object Linux extends MVS with Logging {
     }
   }
   override def readDD(dd: String): ZRecordReaderT = {
-    ddFile(dd)
+    ddFile(dd, sys.env)
   }
 
   override def readCloudDD(dd: String): ZRecordReaderT = {
@@ -72,7 +72,7 @@ object Linux extends MVS with Logging {
             // Prefer Cloud Data Set if DSN exists in GCS
             r
           case _ =>
-            ddFile(dd)
+            ddFile(dd, sys.env)
         }
       case None =>
         throw new RuntimeException(s"DD:$dd not found")
@@ -104,23 +104,17 @@ object Linux extends MVS with Logging {
     CopyBook(new String(Files.readAllBytes(ddPath), Charsets.UTF_8), transcoder, picTCharset = picTCharset)
   }
 
-  /** On Linux DD is an environment variable pointing to a file
+  /** On Linux a DD is interpreted as a file reference or filename
+    * If an environment variable is set, the value will be used as
+    * the path to a file, otherwise the DD is interpreted as a filename.
     */
-  protected def ddFile(dd: String): ZRecordReaderT = {
-    val env = System.getenv()
-    require(env.containsKey(dd), s"$dd environment variable not set")
-    val ddPath = Paths.get(System.getenv(dd))
-    logger.info(s"Opening $dd $ddPath")
-    val lReclKey = dd + "_LRECL"
-    val blkSizeKey = dd + "_BLKSIZE"
-    require(env.containsKey(lReclKey), s"$lReclKey environment variable not set")
-    require(env.containsKey(blkSizeKey), s"$blkSizeKey environment variable not set")
-    val lRecl: Int = env.get(dd + "_LRECL").toInt
-    val blkSize: Int = env.get(dd + "_BLKSIZE").toInt
-    val ddFile = ddPath.toFile
-    require(ddFile.exists, s"$dd $ddPath does not exist")
-    require(ddFile.isFile, s"$dd $ddPath is not a file")
-    new ChannelRecordReader(FileChannel.open(ddPath, StandardOpenOption.READ), lRecl, blkSize)
+  protected def ddFile(dd: String, env: Map[String,String]): ZRecordReaderT = {
+    val path = Paths.get(env.getOrElse(dd, dd))
+    require(Files.exists(path), s"Unable to read DD $dd from '$path': doesn't exist")
+    require(Files.isRegularFile(path), s"Unable to read DD $dd from '$path': not a file")
+    new ChannelRecordReader(FileChannel.open(path, StandardOpenOption.READ),
+      env.getOrElse(s"${dd}_LRECL", "80").toInt,
+      env.getOrElse(s"${dd}_BLKSIZE", "80000").toInt)
   }
 
   override val jobName: String = sys.env.getOrElse("JOBNAME","JOBNAME")
@@ -144,36 +138,49 @@ object Linux extends MVS with Logging {
   override def substituteSystemSymbols(s: String): String = s
 
   override def exists(dsn: DSN): Boolean = throw new NotImplementedError()
+
+  /** On Linux a DSN is interpreted as a path */
   override def readDSN(dsn: DSN): ZRecordReaderT = {
-    val ddPath = dsn match {
-      case MVSStorage.MVSDataset(dsn) => Paths.get(dsn)
-      case MVSStorage.MVSPDSMember(pdsDsn, member) => throw new NotImplementedError()
+    dsn match {
+      case MVSDataset(p) =>
+        val path = Paths.get(p)
+        require(Files.exists(path), s"Unable to read DSN from '$path': does not exist")
+        require(Files.isRegularFile(path), s"Unable to read DSN from '$path': not a file")
+        new ChannelRecordReader(FileChannel.open(path, StandardOpenOption.READ), 80, 80000)
+      case MVSPDSMember(pdsDsn, member) =>
+        throw new NotImplementedError()
     }
-    logger.info(s"Opening $ddPath")
-    val lRecl = 80
-    val blkSize = 800
-    val ddFile = ddPath.toFile
-    require(ddFile.exists, s"$ddPath does not exist")
-    require(ddFile.isFile, s"$ddPath is not a file")
-    new ChannelRecordReader(FileChannel.open(ddPath, StandardOpenOption.READ), lRecl, blkSize)
   }
   override def readDSNLines(dsn: DSN): Iterator[String] = throw new NotImplementedError()
-  override def writeDSN(dsn: DSN): ZRecordWriterT = throw new NotImplementedError()
+
+  /** On Linux a DSN is interpreted as a path */
+  override def writeDSN(dsn: DSN): ZRecordWriterT = {
+    val env = sys.env
+    dsn match {
+      case MVSDataset(p) =>
+        val path = Paths.get(p)
+        Option(path.getParent).foreach(Files.createDirectories(_))
+        import StandardOpenOption.{CREATE, WRITE}
+        ChannelRecordWriter(channel = FileChannel.open(path, CREATE, WRITE), lrecl = 80, blksize = 80000)
+      case _ =>
+        throw new NotImplementedError()
+    }
+  }
+
+  /** On Linux a DD is interpreted as a file reference or filename
+    * If an environment variable is set, the value will be used as
+    * the path to a file, otherwise the DD is interpreted as a filename.
+    */
   override def writeDD(ddName: String): ZRecordWriterT = {
     val env = sys.env
-    require(env.contains(ddName), s"$ddName environment variable not set")
-    val ddPath = Paths.get(env(ddName))
-    val lreclVarName = s"${ddName}_LRECL"
-    val blkSizeVarName = s"${ddName}_BLKSIZE"
-    require(env.contains(lreclVarName), s"$lreclVarName environment variable not set")
-    require(env.contains(blkSizeVarName), s"$blkSizeVarName environment variable not set")
-    logger.info(s"Opening DD:$ddName from path:$ddPath")
-    if (Files.isDirectory(ddPath))
-      throw new IllegalStateException(s"Unable to write DD:$ddName because $ddPath is a directory")
+    val path = Paths.get(env.getOrElse(ddName, ddName))
+    logger.info(s"Writing $ddName DD to '$path'")
+    if (Files.isDirectory(path))
+      throw new IllegalStateException(s"Unable to write DD:$ddName because $path is a directory")
     import StandardOpenOption.{CREATE, WRITE}
-    ChannelRecordWriter(channel = FileChannel.open(ddPath, CREATE, WRITE),
-      lrecl = sys.env(lreclVarName).toInt,
-      blksize = sys.env(blkSizeVarName).toInt)
+    ChannelRecordWriter(channel = FileChannel.open(path, CREATE, WRITE),
+      lrecl = env.getOrElse(s"${ddName}_LRECL", "80").toInt,
+      blksize = env.getOrElse(s"${ddName}_BLKSIZE", "80000").toInt)
   }
   override def listPDS(dsn: DSN): Iterator[PDSMemberInfo] = throw new NotImplementedError()
 
