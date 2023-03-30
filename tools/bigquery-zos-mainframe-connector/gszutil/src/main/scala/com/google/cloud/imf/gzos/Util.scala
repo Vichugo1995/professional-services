@@ -37,15 +37,11 @@ object Util extends Logging {
   final val isIbm = System.getProperty("java.vm.vendor").contains("IBM")
   def zProvider: MVS = if (isIbm) IBM else Linux
   def sleepOrYield(ms: Long): Unit = {
-    if (isIbm) {
-      logger.info(s"Yielding for $ms ms...")
-      val t1 = System.currentTimeMillis + ms
-      while (System.currentTimeMillis < t1){
-        Thread.`yield`()
-      }
-    } else {
-      logger.info(s"Waiting for $ms ms...")
-      Thread.sleep(ms)
+    logger.info(s"Waiting for $ms ms...")
+    val t1 = System.currentTimeMillis + ms
+    while (System.currentTimeMillis < t1){
+      Thread.`yield`()
+      Thread.sleep(1000)
     }
   }
 
