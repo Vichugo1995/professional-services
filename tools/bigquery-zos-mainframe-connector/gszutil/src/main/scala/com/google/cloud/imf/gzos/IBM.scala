@@ -28,13 +28,23 @@ import com.google.common.base.Charsets
 import com.google.common.io.ByteStreams
 
 import java.nio.file.{Files, Paths}
+import java.security.Security
 
 
 object IBM extends MVS with Logging {
   override def isIBM: Boolean = true
 
   override def init(): Unit = {
-    ZOS.addCCAProvider()
+    try {
+      if (sys.env.get("JCEPROVIDER").exists(_.nonEmpty))
+        Security.insertProviderAt(Security.getProvider(sys.env.getOrElse("JCEPROVIDER", "IBMJCE")), 1)
+      else ZOS.addCCAProvider()
+    } catch {
+      case e: Throwable =>
+        val jceProviders = Security.getProviders()
+          .map(p => s"${p.getName}\t${p.getInfo}").mkString("Available JCE providers:\n","\n","")
+        logger.error(s"${e.getMessage}\n$jceProviders", e)
+    }
     System.setProperty("java.net.preferIPv4Stack", "true")
     logger.info("Mainframe Connector Build Info: " + Util.readS("build.txt"))
 
