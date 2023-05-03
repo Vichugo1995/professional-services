@@ -432,8 +432,17 @@ protected object ZOS extends Logging {
     ddList
   }
 
-  def addCCAProvider(): Unit =
-    Security.insertProviderAt(new com.ibm.crypto.hdwrCCA.provider.IBMJCECCA(), 1)
+  def addCCAProvider(): Unit = {
+    try {
+      Class.forName("com.ibm.crypto.hdwrCCA.provider.IBMJCECCA", false, getClass.getClassLoader)
+      Security.insertProviderAt(new com.ibm.crypto.hdwrCCA.provider.IBMJCECCA(), 1)
+      logger.info("Using IBMJCECCA JCE Provider")
+    } catch {
+      case e: ClassNotFoundException =>
+        Security.insertProviderAt(Security.getProvider("IBMJCE"), 1)
+        logger.info("IBM Hardware Crypto IBMJCECCA JCE provider not found, using IBMJCE JCE Provider")
+    }
+  }
 
   def getJobId: String = ZUtil.getCurrentJobId
   def getJobName: String = ZUtil.getCurrentJobname
