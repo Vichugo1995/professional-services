@@ -167,7 +167,7 @@ class ParserITSpec extends AnyFlatSpec {
     assert(parsed.get.replace)
     assert(parsed.get.mode == "cp")
     assert(parsed.get.parallelism == 4)
-    assert(parsed.get.timeOutMinutes == 120)
+    assert(parsed.get.timeOutMinutes.getOrElse(-1) == 120)
     assert(parsed.get.replace)
     assert(parsed.get.gcsUri == "gs://bucket/path")
     assert(parsed.get.tfGCS =="gs://BUCKET/t13i/tr.json")

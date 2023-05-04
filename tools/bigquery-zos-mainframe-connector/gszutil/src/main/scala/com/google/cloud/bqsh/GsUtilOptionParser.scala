@@ -22,9 +22,10 @@ import com.google.cloud.bqsh.GsUtilOptionParser.arg
 import scopt.OptionParser
 
 
-object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgParser[GsUtilConfig] {
+object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil cp") with ArgParser[GsUtilConfig] {
   override def parse(args: Seq[String], env: Map[String,String]): Option[GsUtilConfig] = {
     val envCfg = GsUtilConfig(
+      mode = "cp",
       remoteHost = env.getOrElse("SRVHOSTNAME",""),
       remotePort = env.getOrElse("SRVPORT","52701").toInt,
       lowerCaseColumnNames = env.getOrElse("LOWERCASECOLNAMES","").equalsIgnoreCase("true")
@@ -34,107 +35,106 @@ object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgP
 
   head("gsutil", Bqsh.UserAgent)
 
+  note("Upload Binary MVS Dataset to GCS")
+
   help("help").text("prints this usage text")
 
-  cmd("cp")
-    .text("Upload Binary MVS Dataset to GCS")
-    .action((_,c) => c.copy(mode = "cp"))
-    .children(
-      opt[Unit]("replace")
-        .optional()
-        .action{(_,c) => c.copy(replace = true, recursive = true)}
-        .text("delete before uploading"),
+  opt[Unit]("replace")
+    .optional()
+    .action{(_,c) => c.copy(replace = true, recursive = true)}
+    .text("delete before uploading")
 
-      opt[Unit]("lowerCaseColumnNames")
-        .optional()
-        .action{(_,c) => c.copy(lowerCaseColumnNames = true)}
-        .text("(optional) create lowercase column names for copybook fields"),
+  opt[Unit]("lowerCaseColumnNames")
+    .optional()
+    .action{(_,c) => c.copy(lowerCaseColumnNames = true)}
+    .text("(optional) create lowercase column names for copybook fields")
 
-      opt[Int]("batchSize")
-        .optional()
-        .action{(x,c) => c.copy(blocksPerBatch = x)}
-        .text("blocks per batch (default: 1000)"),
+  opt[Int]("batchSize")
+    .optional()
+    .action{(x,c) => c.copy(blocksPerBatch = x)}
+    .text("blocks per batch (default: 1000)")
 
-      opt[Unit]('m', "parallel")
-        .optional()
-        .action{(_,c) => c.copy(parallelism = 4)}
-        .text("number of concurrent writers (default: 4)"),
+  opt[Unit]('m', "parallel")
+    .optional()
+    .action{(_,c) => c.copy(parallelism = 4)}
+    .text("number of concurrent writers (default: 4)")
 
-      opt[Int]('p', "parallelism")
-        .optional()
-        .action{(x,c) => c.copy(parallelism = x)}
-        .text("number of concurrent writers (default: 4)"),
+  opt[Int]('p', "parallelism")
+    .optional()
+    .action{(x,c) => c.copy(parallelism = x)}
+    .text("number of concurrent writers (default: 4)")
 
-      opt[Int]("timeOutMinutes")
-        .optional()
-        .action{(x,c) => c.copy(timeOutMinutes = Option(x))}
-        .text("(optional) Timeout in minutes for GRecvGrpc call. (default for GCS: 90 minutes, for Mainframe: 50 minutes)"),
+  opt[Int]("timeOutMinutes")
+    .optional()
+    .action{(x,c) => c.copy(timeOutMinutes = Option(x))}
+    .text("(optional) Timeout in minutes for GRecvGrpc call. (default for GCS: 90 minutes, for Mainframe: 50 minutes)")
 
-      opt[Int]("keepAliveTimeInSeconds")
-        .optional()
-        .action{(x,c) => c.copy(keepAliveTimeInSeconds = Option(x))}
-        .text("(optional) keep alive timeout in seconds for http channel. (default: 480 seconds)"),
+  opt[Int]("keepAliveTimeInSeconds")
+    .optional()
+    .action{(x,c) => c.copy(keepAliveTimeInSeconds = Option(x))}
+    .text("(optional) keep alive timeout in seconds for http channel. (default: 480 seconds)")
 
-      opt[Unit]("remote")
-        .optional()
-        .action{(_,c) => c.copy(remote = true)}
-        .text("use remote decoder (default: false"),
+  opt[Unit]("remote")
+    .optional()
+    .action{(_,c) => c.copy(remote = true)}
+    .text("use remote decoder (default: false")
 
-      opt[String]("remoteHost")
-        .optional()
-        .action{(x,c) => c.copy(remoteHost = x)}
-        .text("remote host or ip address"),
+  opt[String]("remoteHost")
+    .optional()
+    .action{(x,c) => c.copy(remoteHost = x)}
+    .text("remote host or ip address")
 
-      opt[Int]("remotePort")
-        .optional()
-        .action{(x,c) => c.copy(remotePort = x)}
-        .text("remote port (default: 52701)"),
+  opt[Int]("remotePort")
+    .optional()
+    .action{(x,c) => c.copy(remotePort = x)}
+    .text("remote port (default: 52701)")
 
-      opt[Int]("connections")
-        .optional()
-        .action{(x,c) => c.copy(nConnections = x)}
-        .text("number of connections to remote receiver (default: 10"),
+  opt[Int]("connections")
+    .optional()
+    .action{(x,c) => c.copy(nConnections = x)}
+    .text("number of connections to remote receiver (default: 10")
 
-      opt[String]("destPath")
-        .optional()
-        .text("destination path")
-        .action((x, c) => c.copy(destPath = x)),
+  opt[String]("destPath")
+    .optional()
+    .text("destination path")
+    .action((x, c) => c.copy(destPath = x))
 
-      opt[String]("destDSN")
-        .optional()
-        .text("destination DSN")
-        .action((x, c) => c.copy(destDSN = x)),
-      opt[String]("tfDSN")
-        .optional()
-        .text("(optional) transformations DSN DATASET.MEMBER or PDS(MBR) ")
-        .action { (x, c) =>
-          c.copy(tfDSN = x)
-        },
-      opt[String]("tfGCS")
-        .optional()
-        .text("(optional) transformations file from GCS")
-        .action { (x, c) =>
-          c.copy(tfGCS = x)
-        },
-      opt[String]("encoding")
-        .optional()
-        .text("(optional) charset used for encoding and decoding character fields. Overrides default set by ENCODING environment variable.")
-        .action((x,c) => c.copy(encoding = Option(x))),
-      opt[String]("pic_t_charset")
-        .optional()
-        .text("(optional) charset used for encoding and decoding international strings, used with PIC T copybook type, default is EBCDIC")
-        .action((x,c) => c.copy(picTCharset = Option(x))),
-      arg[String]("gcsUri")
-        .required()
-        .text("GCS URI in format (gs://bucket/path)")
-        .validate{x =>
-          val uri = new URI(x)
-          if (uri.getScheme != "gs" || uri.getAuthority.isEmpty)
-            failure("invalid GCS URI")
-          else
-            success
-        }
-        .action((x, c) => c.copy(gcsUri = x)),
+  opt[String]("destDSN")
+    .optional()
+    .text("destination DSN")
+    .action((x, c) => c.copy(destDSN = x))
+
+  opt[String]("tfDSN")
+    .optional()
+    .text("(optional) transformations DSN DATASET.MEMBER or PDS(MBR) ")
+    .action {(x, c) => c.copy(tfDSN = x)}
+
+  opt[String]("tfGCS")
+    .optional()
+    .text("(optional) transformations file from GCS")
+    .action {(x, c) => c.copy(tfGCS = x)}
+
+  opt[String]("encoding")
+    .optional()
+    .text("(optional) charset used for encoding and decoding character fields. Overrides default set by ENCODING environment variable.")
+    .action((x,c) => c.copy(encoding = Option(x)))
+
+  opt[String]("pic_t_charset")
+    .optional()
+    .text("(optional) charset used for encoding and decoding international strings, used with PIC T copybook type, default is EBCDIC")
+    .action((x,c) => c.copy(picTCharset = Option(x)))
+
+  arg[String]("gcsUri")
+    .required()
+    .text("GCS URI in format (gs://bucket/path)")
+    .validate{x =>
+      val uri = new URI(x)
+      if (uri.getScheme != "gs" || uri.getAuthority.isEmpty)
+        failure("invalid GCS URI")
+      else
+        success
+    }
+    .action((x, c) => c.copy(gcsUri = x))
 
       arg[String]("dest")
         .optional()
@@ -144,33 +144,6 @@ object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgP
           else if (x.contains("/")) c.copy(destPath = x)
           else c.copy(destDSN = x)
         }
-    )
-
-  cmd("rm")
-    .action((_,c) => c.copy(mode = "rm"))
-    .text("Delete objects in GCS")
-    .children(
-      opt[Unit]('r',"recursive")
-        .optional()
-        .action{(_,c) => c.copy(recursive = true)}
-        .text("delete directory"),
-
-      opt[Unit]('f',"force")
-        .optional()
-        .text("delete without use interaction (always true)"),
-
-      arg[String]("gcsUri")
-        .required()
-        .text("GCS URI in format (gs://bucket/path)")
-        .validate{x =>
-          val uri = new URI(x)
-          if (uri.getScheme != "gs" || uri.getAuthority.isEmpty)
-            failure("invalid GCS URI")
-          else
-            success
-        }
-        .action((x, c) => c.copy(gcsUri = x))
-    )
 
   // Global Options from BigQuery
   opt[String]("dataset_id")

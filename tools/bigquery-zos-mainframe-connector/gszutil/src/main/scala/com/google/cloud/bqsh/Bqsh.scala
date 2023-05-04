@@ -156,9 +156,9 @@ object Bqsh extends Logging {
         } else if (cmd.name == "gsutil") {
           sub match {
             case "cp" =>
-              runCommand(Cp, cmd.args, zos, cmd.env)
+              runCommand(Cp, subArgs, zos, cmd.env)
             case "rm" =>
-              runCommand(GsUtilRm, cmd.args, zos, cmd.env)
+              runCommand(GsUtilRm, subArgs, zos, cmd.env)
             case _ =>
               Result.Failure(s"invalid command '${args.mkString(" ")}'")
           }
