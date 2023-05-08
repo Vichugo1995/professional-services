@@ -73,11 +73,12 @@ trait Transcoder {
 
   /** Read Long from EBCDIC in ByteBuffer */
   @inline
-  final def getLong(buf: ByteBuffer, size: Int): Long = {
+  final def getLong(buf: ByteBuffer, size: Int): Option[Long] = {
     val i1 = buf.position() + size
     val s = new String(buf.array, buf.position(), size, charset).filter(c => c.isDigit || c == '-')
     buf.position(i1)
-    s.toLong
+    if (s.length > 0) Option(s.toLong)
+    else None
   }
 
   /** Read Epoch Day from EBCDIC in ByteBuffer */

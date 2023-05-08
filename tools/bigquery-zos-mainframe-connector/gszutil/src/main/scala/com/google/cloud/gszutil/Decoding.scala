@@ -215,8 +215,15 @@ object Decoding extends Logging {
                            override val size: Int,
                            override val filler: Boolean = false) extends Decoder {
     override def get(buf: ByteBuffer, col: ColumnVector, i: Int): Unit = {
-      val long = transcoder.getLong(buf, size)
-      col.asInstanceOf[LongColumnVector].vector.update(i, long)
+      val vec: LongColumnVector = col.asInstanceOf[LongColumnVector]
+      transcoder.getLong(buf, size) match {
+        case Some(value) =>
+          vec.vector.update(i, value)
+        case None =>
+          vec.vector.update(i, LongColumnVector.NULL_VALUE)
+          vec.isNull.update(i, true)
+          vec.noNulls = false
+      }
     }
 
     override def columnVector(maxSize: Int): ColumnVector =
@@ -417,8 +424,15 @@ object Decoding extends Logging {
                                val scale: Int,
                                override val filler: Boolean = false) extends Decoder {
     override def get(buf: ByteBuffer, col: ColumnVector, i: Int): Unit = {
-      val long = transcoder.getLong(buf, size)
-      col.asInstanceOf[Decimal64ColumnVector].vector.update(i, long)
+      val vec: Decimal64ColumnVector = col.asInstanceOf[Decimal64ColumnVector]
+      transcoder.getLong(buf, size) match {
+        case Some(value) =>
+          vec.vector.update(i, value)
+        case None =>
+          vec.vector.update(i, LongColumnVector.NULL_VALUE)
+          vec.isNull.update(i, true)
+          vec.noNulls = false
+      }
     }
 
     override def columnVector(maxSize: Int): ColumnVector =
