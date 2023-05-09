@@ -196,4 +196,15 @@ class CopyBookSpec extends AnyFlatSpec with Logging {
     assert(Util.trimRight("   ", ' ') == "")
     assert(Util.trimRight("", ' ') == "")
   }
+
+  it should "accept multiple spaces" in {
+    val copybook = """01 EXAMPLE-REC.
+                     |           05  EXAMPLE-NBR-01                  PIC S9(04)  COMP.
+                     |           05  EXAMPLE-STR-02                  PIC  X(10).
+                     |           05  EXAMPLE-NBR-03                  PIC S9(04)   COMP.
+                     |           05  EXAMPLE-STR-04                  PIC   X(10).
+                     |           05  EXAMPLE-STR-04                  PIC   X(00010).
+                     |           05  FILLER                          PIC  X(33).       """.stripMargin
+    val cb = CopyBook(copybook, Utf8)
+  }
 }

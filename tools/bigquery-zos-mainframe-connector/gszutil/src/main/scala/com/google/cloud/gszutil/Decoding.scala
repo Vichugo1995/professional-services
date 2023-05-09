@@ -880,7 +880,8 @@ object Decoding extends Logging {
       case fieldRegex(name, typ) =>
         val typ1 = typ
           .replaceFirst("""\s+COMP""", " COMP")
-          .replaceFirst("""\(0""", """\(""")
+          .replaceFirst("""\(0+""", """\(""")
+          .replaceFirst("""PIC\s+""", """PIC """)
         val name1 = name.toUpperCase
         val filler = name1.startsWith("FILLER")
         val isDate = name1.endsWith("DT") || name1.endsWith("DATE")
