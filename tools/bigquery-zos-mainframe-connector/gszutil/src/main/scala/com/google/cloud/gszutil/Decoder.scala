@@ -18,7 +18,9 @@ package com.google.cloud.gszutil
 
 import java.nio.ByteBuffer
 
+import com.google.cloud.imf.gzos.Ebcdic
 import com.google.cloud.imf.gzos.pb.GRecvProto.Record.Field
+import org.apache.commons.codec.binary.Hex
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector
 import org.apache.orc.TypeDescription
 
@@ -40,4 +42,39 @@ trait Decoder {
 
   /** Proto Representation */
   def toFieldBuilder: Field.Builder
+
+  protected var fieldName: String = ""
+  protected var fieldType: String = ""
+  protected var fieldId: Int = -1
+  def withName(name: String): Decoder = {
+    fieldName = name
+    return this
+  }
+  def withType(typeName: String): Decoder = {
+    fieldType = typeName
+    return this
+  }
+
+  def withId(id: Int): Decoder = {
+    fieldId = id
+    return this
+  }
+
+  /** Print field information for diagnostic purposes
+    *
+    * @param buf ByteBuffer containing record bytes
+    * @param sb StringBuilder to append to
+    */
+  def append(buf: ByteBuffer, sb: StringBuilder): Unit = {
+    val bytes = new Array[Byte](size)
+    buf.get(bytes)
+    sb.append(s"\nField name: ")
+    sb.append(fieldName)
+    sb.append(s"\nField type: ")
+    sb.append(fieldType)
+    sb.append("\nHexadecimal:\n")
+    sb.appendAll(Hex.encodeHex(bytes))
+    sb.append("\nCharacter:\n")
+    sb.append(Ebcdic.decodeBytes(bytes))
+  }
 }

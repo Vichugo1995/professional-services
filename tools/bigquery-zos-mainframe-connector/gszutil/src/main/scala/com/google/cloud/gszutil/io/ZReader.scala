@@ -104,8 +104,14 @@ object ZReader extends Logging {
     } catch {
       case t: Throwable =>
         val cls = decoders.lift(i).map(_.getClass.getSimpleName.stripSuffix("$")).getOrElse("?")
-        if (errors < 3)
-          logger.error(s"Error reading column $i $cls", t)
+        if (errors < 3) {
+          rBuf.clear()
+          val sb = new StringBuilder()
+          sb.append(s"Error reading column $i $cls")
+          sb.append("\nRecord contents:")
+          decoders.foreach(_.append(rBuf, sb))
+          logger.error(sb.result(), t)
+        }
         1
     }
   }

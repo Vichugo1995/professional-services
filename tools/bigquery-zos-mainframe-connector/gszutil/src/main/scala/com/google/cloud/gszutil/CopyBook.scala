@@ -47,9 +47,9 @@ case class CopyBook(raw: String,
 
   override lazy val decoders: Array[Decoder] = {
     val buf = ArrayBuffer.empty[Decoder]
-    altFields.getOrElse(Fields).foreach {
-      case CopyBookField(_, decoder, _) =>
-        buf.append(decoder)
+    altFields.getOrElse(Fields).zipWithIndex.foreach{
+      case (CopyBookField(name, decoder, fieldType), i) =>
+        buf.append(decoder.withName(name).withType(fieldType).withId(i))
       case _ =>
     }
     buf.toArray
