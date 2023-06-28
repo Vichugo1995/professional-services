@@ -15,7 +15,7 @@
  */
 organization := "com.google.cloud.imf"
 name := "mainframe-util"
-version := "2.2.6"
+version := "2.3.0"
 
 scalaVersion := "2.13.10"
 
@@ -82,9 +82,8 @@ Compile/ resourceGenerators += Def.task {
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
 scalacOptions ++= Seq(
-  "-target:jvm-1.8",
-  "-opt:l:inline",
-  "-opt-inline-from:**",
+  "-release", "8",
   "-opt-warnings",
-  "-deprecation"
+  "-deprecation",
+  "-feature"
 )

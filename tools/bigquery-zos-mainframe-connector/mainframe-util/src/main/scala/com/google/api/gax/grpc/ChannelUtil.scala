@@ -16,7 +16,6 @@
 package com.google.api.gax.grpc
 
 import io.grpc.{ClientInterceptor, ManagedChannel}
-import com.google.api.gax.grpc.ChannelPoolSettings
 
 /** Expose package private classes */
 object ChannelUtil {

@@ -4,14 +4,11 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.api.gax.retrying.RetrySettings
 import com.google.api.gax.rpc.{FixedHeaderProvider, HeaderProvider}
-import com.google.api.services.bigquery.BigqueryScopes
-import com.google.api.services.dataflow.{Dataflow, DataflowScopes}
-import com.google.api.services.logging.v2.{Logging, LoggingScopes}
-import com.google.api.services.pubsub.{Pubsub, PubsubScopes}
-import com.google.api.services.storage.StorageScopes
+import com.google.api.services.dataflow.Dataflow
+import com.google.api.services.logging.v2.Logging
+import com.google.api.services.pubsub.Pubsub
 import com.google.auth.Credentials
 import com.google.auth.http.HttpCredentialsAdapter
-import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.storage.v1.{BigQueryReadClient, BigQueryReadSettings}
 import com.google.cloud.bigquery.{BigQuery, BigQueryOptions}
 import com.google.cloud.http.HttpTransportOptions
@@ -36,13 +33,13 @@ object Services {
     .setRetryDelayMultiplier(2.0d)
     .setMaxRpcTimeout(Duration.ofMinutes(2))
     .setRpcTimeoutMultiplier(2.0d)
-    .build
+    .build()
 
   private def transportOptions(httpConfig: HttpConnectionConfigs): HttpTransportOptions = HttpTransportOptions.newBuilder
     .setHttpTransportFactory(CCATransportFactory)
     .setConnectTimeout(httpConfig.connectTimeoutInMillis)
     .setReadTimeout(httpConfig.readTimeoutInMillis)
-    .build
+    .build()
 
   def storage(credentials: Credentials): Storage = {
     new StorageWithRetries(HttpStorageOptions.defaults().getDefaultServiceFactory().create(
@@ -51,27 +48,19 @@ object Services {
         .setTransportOptions(transportOptions(HttpConnectionConfigs.storageHttpConnectionConfigs))
         .setRetrySettings(retrySettings(HttpConnectionConfigs.storageHttpConnectionConfigs))
         .setHeaderProvider(headerProvider)
-        .build), l2RetriesCount, l2RetriesTimeoutMillis)
+        .build()), l2RetriesCount, l2RetriesTimeoutMillis)
   }
-
-  def storageCredentials(): GoogleCredentials =
-    GoogleCredentials.getApplicationDefault.createScoped(StorageScopes.DEVSTORAGE_READ_WRITE)
-
-  def storage(): Storage = storage(storageCredentials())
 
   /** Low-level GCS client */
   def storageApi(credentials: Credentials): com.google.api.services.storage.Storage = {
     new com.google.api.services.storage.Storage.Builder(CCATransportFactory.create,
-      GsonFactory.getDefaultInstance, new HttpCredentialsAdapter(credentials))
+      GsonFactory.getDefaultInstance(), new HttpCredentialsAdapter(credentials))
       .setApplicationName(UserAgent).build()
   }
 
-  def bigqueryCredentials(): GoogleCredentials =
-    GoogleCredentials.getApplicationDefault.createScoped(BigqueryScopes.BIGQUERY)
-
   def bigQuery(project: String, location: String, credentials: Credentials): BigQuery =
     new BigQueryWithRetries(
-      bigQueryOptions(project, location, credentials).getService,
+      bigQueryOptions(project, location, credentials).getService(),
       l2RetriesCount, l2RetriesTimeoutMillis)
 
   /**
@@ -89,19 +78,19 @@ object Services {
       l2RetriesCount, l2RetriesTimeoutMillis)
 
   private def bigQueryOptions(project: String, location: String, credentials: Credentials) =
-    BigQueryOptions.newBuilder
+    BigQueryOptions.newBuilder()
       .setLocation(location)
       .setProjectId(project)
       .setCredentials(credentials)
       .setTransportOptions(transportOptions(HttpConnectionConfigs.bgHttpConnectionConfigs))
       .setRetrySettings(retrySettings(HttpConnectionConfigs.bgHttpConnectionConfigs))
       .setHeaderProvider(headerProvider)
-      .build
+      .build()
 
   def bigQueryApi(credentials: Credentials): com.google.api.services.bigquery.Bigquery = {
     new com.google.api.services.bigquery.Bigquery.Builder(
       CCATransportFactory.create,
-      GsonFactory.getDefaultInstance,
+      GsonFactory.getDefaultInstance(),
       new HttpCredentialsAdapter(credentials))
       .setApplicationName(UserAgent).build()
   }
@@ -115,30 +104,21 @@ object Services {
       .build())
   }
 
-  def loggingCredentials(): GoogleCredentials =
-    GoogleCredentials.getApplicationDefault.createScoped(LoggingScopes.LOGGING_WRITE)
-
   def logging(credentials: Credentials): Logging =
     new Logging.Builder(CCATransportFactory.create,
-      GsonFactory.getDefaultInstance,
+      GsonFactory.getDefaultInstance(),
       new HttpCredentialsAdapter(credentials))
-      .setApplicationName(UserAgent).build
-
-  def dataflowCredentials(): GoogleCredentials =
-    GoogleCredentials.getApplicationDefault.createScoped(DataflowScopes.CLOUD_PLATFORM)
+      .setApplicationName(UserAgent).build()
 
   def dataflow(credentials: Credentials): Dataflow =
     new Dataflow.Builder(CCATransportFactory.create,
       GsonFactory.getDefaultInstance,
       new HttpCredentialsAdapter(credentials))
-      .setApplicationName(UserAgent).build
-
-  def pubsubCredentials(): GoogleCredentials =
-    GoogleCredentials.getApplicationDefault.createScoped(PubsubScopes.PUBSUB)
+      .setApplicationName(UserAgent).build()
 
   def pubsub(credentials: Credentials): Pubsub =
     new Pubsub.Builder(CCATransportFactory.create,
-      GsonFactory.getDefaultInstance,
+      GsonFactory.getDefaultInstance(),
       new HttpCredentialsAdapter(credentials))
-      .setApplicationName(UserAgent).build
+      .setApplicationName(UserAgent).build()
 }
