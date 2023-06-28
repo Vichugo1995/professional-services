@@ -36,7 +36,9 @@ object Bqsh extends Logging {
     logger.info(s"Passed args: ${args.length}")
     logger.info("-------------------------------------------------")
 
-    val jobInfoMap = Util.toMap(zos.getInfo)
+    val jobInfo = zos.getInfo
+    Util.putJobInfoIntoMDC(jobInfo)
+    val jobInfoMap = Util.toMap(jobInfo)
     jobInfoMap.put("script", script)
     logger.info("Started BQSH")
     logger.info(jobInfoMap)

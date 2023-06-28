@@ -27,6 +27,7 @@ import com.google.cloud.storage.BlobInfo
 import com.google.common.base.Charsets
 import com.google.common.collect.ImmutableSet
 import com.google.common.io.{BaseEncoding, Resources}
+import org.apache.logging.log4j.ThreadContext
 
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
@@ -42,6 +43,22 @@ object Util extends Logging {
     while (System.currentTimeMillis < t1){
       Thread.`yield`()
       Thread.sleep(1000)
+    }
+  }
+
+  /** Add job info to log4j2 ThreadContext for inclusion in Cloud Logging json payload
+    *
+    * @param zInfo job info
+    */
+  def putJobInfoIntoMDC(zInfo: ZOSJobInfo): Unit = {
+    if (zInfo != null) {
+      ThreadContext.put("jobid", zInfo.getJobid)
+      ThreadContext.put("jobdate", zInfo.getJobdate)
+      ThreadContext.put("jobtime", zInfo.getJobtime)
+      ThreadContext.put("jobname", zInfo.getJobname)
+      ThreadContext.put("stepname", zInfo.getStepName)
+      ThreadContext.put("procstepname", zInfo.getProcStepName)
+      ThreadContext.put("user", zInfo.getUser)
     }
   }
 

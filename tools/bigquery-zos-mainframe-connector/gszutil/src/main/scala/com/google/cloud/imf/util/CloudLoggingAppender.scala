@@ -5,8 +5,8 @@ import com.google.api.services.logging.v2.model.{LogEntry, MonitoredResource, Wr
 import com.google.auth.Credentials
 import com.google.cloud.imf.gzos.Util
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.core._
+import org.apache.logging.log4j.{Level, ThreadContext}
+import org.apache.logging.log4j.core.{Appender, Core, Filter, Layout, LogEvent}
 import org.apache.logging.log4j.core.appender.{AbstractAppender, NullAppender}
 import org.apache.logging.log4j.core.config.plugins.{Plugin, PluginAttribute, PluginElement, PluginFactory}
 
@@ -19,15 +19,15 @@ class CloudLoggingAppender(name: String, projectId: String, logId: String, crede
                            filter: Filter, layout: Layout[_ <: Serializable])
   extends AbstractAppender(name, filter, layout, ignoreExceptions, Array.empty) {
 
-  private final val Global = new MonitoredResource().setType("global")
-  private final val logName = s"projects/$projectId/logs/$logId"
+  private final val Global: MonitoredResource = new MonitoredResource().setType("global")
+  private final val logName: String = s"projects/$projectId/logs/$logId"
   private final val logger: Logging = Services.logging(credentials)
 
   override def append(event: LogEvent): Unit = {
     //todo add event buffering here
     try {
       val entry: LogEntry = new LogEntry()
-        .setJsonPayload(toMap(event))
+        .setJsonPayload(toMap(ThreadContext.getContext(), event))
         .setLogName(logName)
         .setResource(Global)
         .setSeverity(toSeverity(event.getLevel))
@@ -44,11 +44,18 @@ class CloudLoggingAppender(name: String, projectId: String, logId: String, crede
     }
   }
 
-  private def toMap(e: LogEvent): java.util.Map[String, Object] = {
-    val m = new java.util.HashMap[String, Any]
+  /** Combines MDC context and log event to produce json payload
+    *
+    * @param context ThreadContext map from Log4j2 MDC
+    * @param e Log4j2 LogEvent
+    * @return map for Cloud Logging json payload
+    */
+  private def toMap(context: java.util.Map[String,String], e: LogEvent): java.util.Map[String, Object] = {
+    val m = new java.util.HashMap[String, Any]()
+    m.putAll(context)
     m.put("logger", e.getLoggerName)
     m.put("thread", e.getThreadName)
-    m.put("msg", Option(e.getMessage).map(_.getFormattedMessage).getOrElse("Empty message"))
+    m.put("msg", Option(e.getMessage).map(_.getFormattedMessage()).getOrElse(""))
     m.put("timestamp", e.getTimeMillis)
     if (e.getThrown != null) {
       m.put("stackTrace", ExceptionUtils.getStackTrace(e.getThrown))
@@ -75,11 +82,19 @@ class CloudLoggingAppender(name: String, projectId: String, logId: String, crede
 
 object CloudLoggingAppender {
 
+  /** Appender configured by log4j2.xml
+    *
+    * @param name
+    * @param ignoreExceptions
+    * @param filter
+    * @param layout
+    * @return
+    */
   @PluginFactory
   def createAppender(@PluginAttribute("name") name: String,
                      @PluginAttribute(value = "ignoreExceptions", defaultBoolean = true) ignoreExceptions: Boolean,
                      @PluginElement("Filter") filter: Filter,
-                     @PluginElement("Layout") layout: Layout[_ <: Serializable]) = {
+                     @PluginElement("Layout") layout: Layout[_ <: Serializable]): Appender = {
 
     val maybeCloudAppender: Option[CloudLoggingAppender] = for {
       projectId <- env.get("LOG_PROJECT").filter(_.nonEmpty)
