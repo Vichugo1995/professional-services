@@ -32,7 +32,7 @@ object GrecvLoadTestClient extends Logging {
 
   val zos = Linux
 
-  def export(metadata: JobMetadata,
+  def `export`(metadata: JobMetadata,
              outputUri: String,
              cfg: GRecvLoadTestConfig): Result = {
     val exportConfig = ExportConfig(

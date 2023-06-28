@@ -96,22 +96,22 @@ object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgP
         .text("number of connections to remote receiver (default: 10"),
 
       opt[String]("destPath")
-        .optional
+        .optional()
         .text("destination path")
         .action((x, c) => c.copy(destPath = x)),
 
       opt[String]("destDSN")
-        .optional
+        .optional()
         .text("destination DSN")
         .action((x, c) => c.copy(destDSN = x)),
       opt[String]("tfDSN")
-        .optional
+        .optional()
         .text("(optional) transformations DSN DATASET.MEMBER or PDS(MBR) ")
         .action { (x, c) =>
           c.copy(tfDSN = x)
         },
       opt[String]("tfGCS")
-        .optional
+        .optional()
         .text("(optional) transformations file from GCS")
         .action { (x, c) =>
           c.copy(tfGCS = x)
@@ -137,7 +137,7 @@ object GsUtilOptionParser extends OptionParser[GsUtilConfig]("gsutil") with ArgP
         .action((x, c) => c.copy(gcsUri = x)),
 
       arg[String]("dest")
-        .optional
+        .optional()
         .text("(optional) local path or DSN (/path/to/file or DATASET.MEMBER or PDS(MBR))")
         .action{(x, c) =>
           if (x.contains("(")) c.copy(destDSN = x)

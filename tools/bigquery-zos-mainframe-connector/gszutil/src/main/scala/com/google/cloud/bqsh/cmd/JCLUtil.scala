@@ -133,7 +133,7 @@ object JCLUtil extends Command[JCLUtilConfig] with Logging {
     if (filtered.hasNext){
       val steps = captureSteps(lines)
       while (steps.hasNext){
-        val step = steps.next
+        val step = steps.next()
         Console.err.println(s"$src ${step.proc} ${step.name} ${step.mbr}")
       }
     }
@@ -162,7 +162,7 @@ object JCLUtil extends Command[JCLUtilConfig] with Logging {
       out.write(record.getBytes)
 
     out.close()
-    logger.info(s"Copied ${out.count} lines from $src to $dest")
+    logger.info(s"Copied ${out.count()} lines from $src to $dest")
     Result.Success
   }
 }

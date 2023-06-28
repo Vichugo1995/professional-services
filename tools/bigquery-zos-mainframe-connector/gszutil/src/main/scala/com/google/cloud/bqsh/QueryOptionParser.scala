@@ -29,7 +29,7 @@ object QueryOptionParser extends OptionParser[QueryConfig]("query") with ArgPars
 
   // z/OS Options
   opt[String]("query_dsn")
-    .optional
+    .optional()
     .text("(optional) DSN to read query from in format HLQ.MEMBER or HLQ.PDS(MEMBER)")
     .action((x,c) => c.copy(queryDSN = x))
 

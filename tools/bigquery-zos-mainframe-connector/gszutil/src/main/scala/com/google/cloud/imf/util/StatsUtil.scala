@@ -90,7 +90,7 @@ object StatsUtil extends GoogleApiL2Retrier with Logging {
       LoadStats.forJob(j).foreach{s => LoadStats.put(s,row); sb.append(LoadStats.report(s))}
       MergeStats.forJob(j).foreach { s => MergeStats.put(s, row); sb.append(MergeStats.report(s)) }
       InsertStats.forJob(j).foreach { s => InsertStats.put(s, row); sb.append(InsertStats.report(s)) }
-      logger.info(s"Job Statistics:\n${sb.result}")
+      logger.info(s"Job Statistics:\n${sb.result()}")
     }
 
     logger.info(s"Inserting stats into ${BQ.tableSpec(tableId)}")
@@ -139,7 +139,7 @@ object StatsUtil extends GoogleApiL2Retrier with Logging {
         sb.append(s"message: ${e.getMessage}\n")
         sb.append(s"reason: ${e.getReason}\n\n")
       }
-      logger.error(sb.result)
+      logger.error(sb.result())
     }
   }
 

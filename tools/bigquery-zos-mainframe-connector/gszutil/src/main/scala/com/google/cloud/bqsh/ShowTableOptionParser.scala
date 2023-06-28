@@ -30,29 +30,29 @@ object ShowTableOptionParser
 
   // Custom Options
   arg[Unit]("quiet")
-    .optional
+    .optional()
     .text("(optional) don't print output")
     .action{(_,c) => c.copy(quiet = true)}
 
   // Standard Options
   arg[String]("tablespec")
-    .required
+    .required()
     .text("[PROJECT_ID]:[DATASET].[TABLE]")
     .action{(x,c) => c.copy(tablespec = x)}
 
   // Global options
   opt[String]("dataset_id")
-    .optional
+    .optional()
     .text(GlobalConfig.datasetIdText)
     .action((x,c) => c.copy(datasetId = x))
 
   opt[String]("location")
-    .optional
+    .optional()
     .text(GlobalConfig.locationText)
     .action((x,c) => c.copy(location = x))
 
   opt[String]("project_id")
-    .optional
+    .optional()
     .text(GlobalConfig.projectIdText)
     .action((x,c) => c.copy(projectId = x))
 }

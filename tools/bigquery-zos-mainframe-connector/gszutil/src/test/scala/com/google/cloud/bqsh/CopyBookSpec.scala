@@ -207,4 +207,21 @@ class CopyBookSpec extends AnyFlatSpec with Logging {
                      |           05  FILLER                          PIC  X(33).       """.stripMargin
     val cb = CopyBook(copybook, Utf8)
   }
+
+  it should "accept string fields" in {
+    val copybook =
+      """01 EXAMPLE-REC.
+        |    05  EXAMPLE-NBR-01                  PIC X(7).
+        |           05  EXAMPLE-ATTR-02                  PIC  X(42).
+        |           05  EXAMPLE-ATTR-03                  PIC X(62).
+        |           05  EXAMPLE-ATTR-04                  PIC   X(60).
+        |           05  EXAMPLE-NBR-05                  PIC   X(12).
+        |           05  EXAMPLE-IND-06                  PIC   X(1).
+        |           05  EXAMPLE-DTE-07                  PIC   X(10).
+        |           05  EXAMPLE-ID-08                  PIC   X(8).
+        |           05  EXAMPLE-DTE-09                  PIC   X(10).
+        |           05  EXAMPLE-ID-10                  PIC   X(8).
+      """.stripMargin
+    val cb = CopyBook(copybook, Utf8)
+  }
 }

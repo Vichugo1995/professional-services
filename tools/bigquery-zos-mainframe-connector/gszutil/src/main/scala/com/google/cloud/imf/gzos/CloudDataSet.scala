@@ -176,7 +176,7 @@ object CloudDataSet extends Logging {
         sb.append(StatsUtil.epochMillis2Timestamp(b.getCreateTime))
         sb.append("\n")
       }
-      logger.info(sb.result)
+      logger.info(sb.result())
 
       val lrecls = versions.map(getLrecl)
       if (lrecls.distinct.length > 1){

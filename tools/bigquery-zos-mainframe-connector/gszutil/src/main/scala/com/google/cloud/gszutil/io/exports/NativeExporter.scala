@@ -77,7 +77,6 @@ abstract class NativeExporter(bq: BigQuery,
     BQ.genJobId(cfg.projectId, cfg.location, jobInfo, "query")
 
   def submitExportJob(bq: BigQuery, jobConfiguration: QueryJobConfiguration, jobId: JobId, cfg: ExportConfig): Job = {
-    try {
       logger.info(s"Submitting QueryJob.\njobId=${BQ.toStr(jobId)}")
       val job = BQ.runJob(bq, jobConfiguration, jobId, cfg.timeoutMinutes * 60, sync = true)
       logger.info(s"QueryJob finished.")
@@ -97,6 +96,5 @@ abstract class NativeExporter(bq: BigQuery,
           logger.error(msg)
           throw new RuntimeException(msg)
       }
-    }
   }
 }

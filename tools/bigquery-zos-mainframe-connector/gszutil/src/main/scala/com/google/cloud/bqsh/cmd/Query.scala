@@ -70,7 +70,7 @@ object Query extends Command[QueryConfig] with Logging {
           SelectStats.forJob(j).foreach { s => sb.append(SelectStats.report(s)) }
           LoadStats.forJob(j).foreach { s => sb.append(LoadStats.report(s)) }
           MergeStats.forJob(j).foreach { s => sb.append(MergeStats.report(s)) }
-          logger.info(s"Query Statistics:\n${sb.result} for jobId=${BQ.toStr(jobId)}")
+          logger.info(s"Query Statistics:\n${sb.result()} for jobId=${BQ.toStr(jobId)}")
         }
 
         // check for errors

@@ -83,7 +83,7 @@ object Scp extends Command[ScpConfig] with Logging {
         sb.append(s"exception thrown during scp")
         if (e.getMessage != null)
           sb.append(s"\n${e.getMessage}")
-        val msg = sb.result
+        val msg = sb.result()
         logger.error(msg, e)
         Result.Failure(msg)
     }

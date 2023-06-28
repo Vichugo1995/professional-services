@@ -16,6 +16,7 @@
 
 package com.google.cloud.load
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.{FormatOptions, JobInfo, LoadJobConfiguration, TableId}
 import com.google.cloud.bqsh.BQ
 import com.google.cloud.bqsh.cmd.Result
@@ -27,7 +28,7 @@ class ExportAndImportWithBqLoadTest(cfg: GRecvLoadTestConfig) extends GrecvLoadT
 
   val exportAndImportTest = new ExportAndImportLoadTest(cfg)
 
-  val bq = Services.bigQuery(cfg.projectId, cfg.location, Services.bigqueryCredentials())
+  val bq = Services.bigQuery(cfg.projectId, cfg.location, GoogleCredentials.getApplicationDefault)
 
   lazy val bqSchema = {
     logger.info(s"$loadTestId Reading bq schema from DSN: ${cfg.bqSchemaPath}")

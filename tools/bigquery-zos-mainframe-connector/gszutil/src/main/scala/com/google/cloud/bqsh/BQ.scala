@@ -281,7 +281,7 @@ object BQ extends Logging with GoogleApiL2Retrier {
         sb.append(err.toString)
         sb.append("\n")
       }
-      val msg = sb.result
+      val msg = sb.result()
       logger.error(msg)
       throw new RuntimeException(msg)
     }
@@ -417,7 +417,7 @@ object BQ extends Logging with GoogleApiL2Retrier {
         sb.append(s"message: ${e.getMessage}\n")
         sb.append(s"reason: ${e.getReason}\n\n")
       }
-      logger.error(sb.result)
+      logger.error(sb.result())
     }
   }
 
@@ -463,7 +463,7 @@ object BQ extends Logging with GoogleApiL2Retrier {
 
     if (x.getSchema == null)
       logger.warn(s"schema not found for standard table")
-    BQSchema(buf.result)
+    BQSchema(buf.result())
   }
 
   def checkTableDef(bq: BigQuery, tableId: TableId, expectedSchema: BQSchema): Option[BQSchema] = {

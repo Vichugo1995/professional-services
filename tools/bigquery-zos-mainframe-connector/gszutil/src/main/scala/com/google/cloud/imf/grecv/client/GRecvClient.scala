@@ -67,7 +67,7 @@ object GRecvClient extends Uploader with Logging {
     }
   }
 
-  def export(sql: String,
+  def `export`(sql: String,
              copybook: String,
              outputUri: String,
              cfg: ExportConfig,

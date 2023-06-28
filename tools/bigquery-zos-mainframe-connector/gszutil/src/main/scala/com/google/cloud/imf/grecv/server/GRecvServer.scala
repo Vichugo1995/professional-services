@@ -27,8 +27,9 @@ class GRecvServer(cfg: GRecvConfig,
     val b = Grpc.newServerBuilderForPort(cfg.port, tlsBuilder.build())
       .addService(new GRecvService(storageFunc, bqStorageFunc, storageApiFunc, bqFunc)).asInstanceOf[ServerBuilder[_]]
       .compressorRegistry(GzipCodec.compressorRegistry).asInstanceOf[ServerBuilder[_]]
-      .executor(ex).asInstanceOf[ServerBuilder[_]]
-    b.build
+      .executor(ex)
+      .asInstanceOf[ServerBuilder[_]]
+    b.build()
   }
 
   def start(block: Boolean = true): Unit = {

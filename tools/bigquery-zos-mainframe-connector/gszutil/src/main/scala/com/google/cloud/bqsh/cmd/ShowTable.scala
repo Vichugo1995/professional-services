@@ -49,7 +49,7 @@ object ShowTable extends Command[ShowTableConfig] with Logging {
       }
       sb.append("\n")
     }
-    sb.result
+    sb.result()
   }
 
   override def run(cfg: ShowTableConfig, zos: MVS, env: Map[String,String]): Result = {

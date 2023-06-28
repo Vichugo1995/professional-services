@@ -39,12 +39,12 @@ class PartialPageIterator[T](val startIndex: Long, val endIndex: Long, val pageS
     throw new IllegalArgumentException(s"Iterator bounds check failed, check bounds values [startIndex=$startIndex, endIndex=$endIndex, pageSize=$pageSize]")
   private var currentIndex = startIndex
 
-  override def hasNext(): Boolean = {
+  override def hasNext: Boolean = {
     currentIndex < endIndex
   }
 
   override def next(): T = {
-    if (!hasNext()) {
+    if (!hasNext) {
       Iterator.empty.next()
     }
     val result = pageFetcher.fetch(currentIndex, Math.min(endIndex - currentIndex, pageSize))

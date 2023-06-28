@@ -242,14 +242,14 @@ protected object ZOS extends Logging {
         val sb = new StringBuilder
         sb.append(s"DSN=$dsn doesn't exist\n")
         sb.append(e.getMessage)
-        val msg = sb.result
+        val msg = sb.result()
         logger.error(msg)
         throw new RuntimeException(msg, e)
       case e: Throwable =>
         val sb = new StringBuilder
         sb.append(s"Failed to open DSN=$dsn\n")
         if (e.getMessage != null) sb.append(e.getMessage)
-        val msg = sb.result
+        val msg = sb.result()
         logger.error(e.printStackTrace())
         throw new RuntimeException(msg, e)
     }

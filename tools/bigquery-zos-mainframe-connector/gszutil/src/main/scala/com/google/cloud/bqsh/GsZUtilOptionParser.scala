@@ -35,28 +35,28 @@ with ArgParser[GsZUtilConfig]{
   help("help").text("prints this usage text")
 
   opt[String]("cobDsn")
-    .optional
+    .optional()
     .text("DSN of copybook")
     .action((x,c) => c.copy(cobDsn = x))
 
   opt[String]("inDsn")
-    .optional
+    .optional()
     .text("DSN of data set to be transcoded to ORC")
     .action((x,c) => c.copy(inDsn = x))
 
   opt[String]("gcsOutUri")
-    .optional
+    .optional()
     .text("Cloud Storage prefix for output ORC files (format: gs://BUCKET/PREFIX)")
     .action((x,c) => c.copy(gcsOutUri = x))
 
   opt[String]("remoteHost")
-    .optional
+    .optional()
     .text("hostname or IP address of GRecv transcoding service (default: obtained from " +
       "SRVHOSTNAME environment variable)")
     .action((x,c) => c.copy(remoteHost = x))
 
   opt[String]("remotePort")
-    .optional
+    .optional()
     .text("port of GRecv transcoding service (default: 52701 or SRVPORT environment variable)")
     .action((x,c) => c.copy(remoteHost = x))
 

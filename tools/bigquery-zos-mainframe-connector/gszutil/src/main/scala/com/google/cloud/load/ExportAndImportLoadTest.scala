@@ -16,6 +16,7 @@
 
 package com.google.cloud.load
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.gszutil.io.exports.StorageFileCompose
 import com.google.cloud.imf.util.Services
 
@@ -25,12 +26,12 @@ class ExportAndImportLoadTest(cfg: GRecvLoadTestConfig) extends GrecvLoadTestSer
 
   val exportUri = s"$getOutputUri/EXPORT"
   val importUri = s"$getOutputUri/IMPORT"
-  val gcs = Services.storage()
+  val gcs = Services.storage(GoogleCredentials.getApplicationDefault)
 
   override def executeRequest(jobMetadata: JobMetadata): Future[JobResponse] = {
     Future {
-      val export = (jobMetadata, GrecvLoadTestClient.`export`(jobMetadata, exportUri, cfg))
-      handleResponse(export, "export")
+      val `export` = (jobMetadata, GrecvLoadTestClient.`export`(jobMetadata, exportUri, cfg))
+      handleResponse(`export`, "export")
       new StorageFileCompose(gcs).composeAll(s"$importUri/${jobMetadata.jobId}", s"$exportUri/${jobMetadata.jobId}/")
       (jobMetadata, GrecvLoadTestClient.importRequest(jobMetadata, s"$importUri/${jobMetadata.jobId}", s"$importUri/orc/${jobMetadata.jobId}", compress = false, cfg))
     }

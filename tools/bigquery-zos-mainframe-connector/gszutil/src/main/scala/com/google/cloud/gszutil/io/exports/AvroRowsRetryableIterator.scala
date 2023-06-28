@@ -46,13 +46,13 @@ class AvroRowsRetryableIterator(callable: ServerStreamingCallable[ReadRowsReques
   }
 
   @tailrec
-  override final def next: ReadRowsResponse = Try(internalIterator.next()) match {
+  override final def next(): ReadRowsResponse = Try(internalIterator.next()) match {
     case Success(value) => value
     case Failure(ex) if counter < 0 => throw ex
     case Failure(ex) =>
       logger.info(s"Retrying next(), offset=${request.getOffset}, retry_from_offset=$offset, exception=$ex")
       resetIteratorWithDelay()
-      next
+      next()
   }
 
   def consumed(rowsCount: Long): Unit = {

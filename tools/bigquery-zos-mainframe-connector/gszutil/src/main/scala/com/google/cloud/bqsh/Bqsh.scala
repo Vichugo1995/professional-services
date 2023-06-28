@@ -96,7 +96,7 @@ object Bqsh extends Logging {
           sb.append("\n")
           sb.append(result.message)
         }
-        logger.error(sb.result)
+        logger.error(sb.result())
         if (exitOnError)
           System.exit(result.exitCode)
       }
@@ -224,7 +224,7 @@ object Bqsh extends Logging {
           bracket = false
           varName.append(c)
           if (!(c.isLetterOrDigit || c == '_')) {
-            throw new IllegalArgumentException(s"invalid variable ${varName.result}")
+            throw new IllegalArgumentException(s"invalid variable ${varName.result()}")
           }
           sb.append(env.getOrElse(varName.result(), ""))
           varName.clear()
@@ -232,7 +232,7 @@ object Bqsh extends Logging {
           variable = false
           varName.append(c)
           if (!(c.isLetterOrDigit || c == '_')) {
-            throw new IllegalArgumentException(s"invalid variable ${varName.result}")
+            throw new IllegalArgumentException(s"invalid variable ${varName.result()}")
           }
           sb.append(env.getOrElse(varName.result(), ""))
           varName.clear()

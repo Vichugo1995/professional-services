@@ -54,7 +54,7 @@ object SdsfUtil extends Command[SdsfUtilConfig] with Logging {
           sb.append(x)
           sb.append("\n")
         }
-        val msg = sb.result
+        val msg = sb.result()
         logger.error(msg, e)
         Result.Failure(msg)
     }

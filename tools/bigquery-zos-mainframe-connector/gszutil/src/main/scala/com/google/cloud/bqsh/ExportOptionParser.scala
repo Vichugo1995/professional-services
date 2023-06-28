@@ -31,22 +31,22 @@ object ExportOptionParser
 
   // z/OS Options
   opt[String]("query_dsn")
-    .optional
+    .optional()
     .text("(optional) DSN to read query from in format HLQ.MEMBER or HLQ.PDS(MEMBER)")
     .action((x,c) => c.copy(queryDSN = x))
 
   opt[String]("sql")
-    .optional
+    .optional()
     .text("(optional) SQL BQ query")
     .action((x,c) => c.copy(sql = x))
 
   opt[String]("outDD")
-    .optional
+    .optional()
     .text("(optional) DD to write output records to (default: OUTFILE)")
     .action((x,c) => c.copy(outDD = x))
 
   opt[String]("cobDsn")
-    .optional
+    .optional()
     .text("(optional) DSN to read copybook from. If not provided, copybook will be read from " +
       "DD:COPYBOOK")
     .action((x,c) => c.copy(cobDsn = x))
@@ -86,7 +86,7 @@ object ExportOptionParser
     .text("(optional) keep alive timeout in seconds for http channel. (default: 480 seconds)")
 
   opt[String]("run_mode")
-    .optional
+    .optional()
     .text("(optional) Switches between export implementations, currently supported: parallel, single thread exports. Possible values single, parallel, default is parallel")
     .action((x,c) => c.copy(runMode = x))
 

@@ -109,6 +109,10 @@ class BqStorageApiExporter(cfg: ExportConfig,
       .filter(r => r._2.isLeft)
 
     if (errors.nonEmpty)
-      throw new IllegalStateException(s"Resources [${errors.map(_._1).toSeq}] were not closed properly!", errors.head._2.left.get)
+      errors.head._2 match {
+        case Left(e) =>
+          throw new IllegalStateException(s"Resources [${errors.map(_._1).toSeq}] were not closed properly!", e)
+        case _ =>
+      }
   }
 }

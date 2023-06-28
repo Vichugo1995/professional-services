@@ -65,7 +65,7 @@ object SdsfUtilOptionParser
       Try(new URI(x)) match {
         case Success(uri) if uri.getScheme == "gs" =>
           success
-        case Failure(_) =>
+        case _ =>
           failure(s"invalid URI '$x'")
       }
     }

@@ -27,12 +27,12 @@ object GrecvLoadTestConfigParser extends OptionParser[GRecvLoadTestConfig]("load
   help("help").text("prints this usage text")
 
   opt[String]("target_host")
-    .optional
+    .optional()
     .action { (x, c) => c.copy(targetHost = x) }
     .text("Bind Address (default: 127.0.0.1)")
 
   opt[Int]('p', "target_port")
-    .optional
+    .optional()
     .action { (x, c) => c.copy(targetPort = x) }
     .text("Bind Port (default: 51771)")
 
@@ -70,7 +70,7 @@ object GrecvLoadTestConfigParser extends OptionParser[GRecvLoadTestConfig]("load
     .text("number of requests")
 
   opt[String]("export_run_mode")
-    .optional
+    .optional()
     .text("storage_api or parallel for export and exportAndImport cases")
     .action((x, c) => c.copy(exportRunMode = x))
 
@@ -90,7 +90,7 @@ object GrecvLoadTestConfigParser extends OptionParser[GRecvLoadTestConfig]("load
     .text("number of threads used for load test")
 
   opt[String]("test_case")
-    .optional
+    .optional()
     .text("Possible values: export, import, export_and_import")
     .action((x, c) => c.copy(testCase = x))
 

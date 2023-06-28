@@ -112,7 +112,7 @@ object IBM extends MVS with Logging {
       case Some(unixPath) if unixPath.nonEmpty =>
         logger.info(s"reading credentials from $unixPath")
         Files.readAllBytes(Paths.get(unixPath))
-      case None =>
+      case _ =>
         logger.info(s"reading credentials from DD:KEYFILE")
         Util.readAllBytes(ZOS.readDD("KEYFILE"))
     }

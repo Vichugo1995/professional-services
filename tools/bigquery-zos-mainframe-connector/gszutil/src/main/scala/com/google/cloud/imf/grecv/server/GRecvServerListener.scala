@@ -167,7 +167,7 @@ object GRecvServerListener extends Logging {
     }
   }
 
-  def export(request: GRecvProto.GRecvExportRequest,
+  def `export`(request: GRecvProto.GRecvExportRequest,
              bq: BigQuery,
              storageApi: BigQueryReadClient,
              gcs: Storage,

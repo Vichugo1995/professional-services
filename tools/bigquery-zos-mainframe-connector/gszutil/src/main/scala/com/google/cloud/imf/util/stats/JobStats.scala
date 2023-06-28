@@ -16,7 +16,7 @@
 
 package com.google.cloud.imf.util.stats
 
-import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.bigquery.model.Job
 import com.google.cloud.bqsh.BQ.SchemaRowBuilder
 
@@ -28,7 +28,7 @@ object JobStats {
     Option(JobStats(j.getJobReference.getProjectId,
       j.getJobReference.getLocation,
       j.getJobReference.getJobId,
-      Try(JacksonFactory.getDefaultInstance.toString(j)).getOrElse("")
+      Try(GsonFactory.getDefaultInstance.toString(j)).getOrElse("")
     ))
   }
 

@@ -28,15 +28,15 @@ import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
 class LocalFileExporter extends FileExporter with Logging {
-  protected var export: FileExport = _
+  protected var `export`: FileExport = _
 
-  override def isOpen: Boolean = export != null
+  override def isOpen: Boolean = `export` != null
 
-  override def currentExport: FileExport = export
+  override def currentExport: FileExport = `export`
 
-  override def newExport(e: FileExport): Unit = export = e
+  override def newExport(e: FileExport): Unit = `export` = e
 
-  override def endIfOpen(): Unit = if (isOpen) export.close()
+  override def endIfOpen(): Unit = if (isOpen) `export`.close()
 
   override def toString: String = `export`.toString
 
@@ -48,13 +48,13 @@ class LocalFileExporter extends FileExporter with Logging {
     val bqFields = (0 until nCols).map { i => bqSchema.get(i) }
     var rowsCounter = 0
 
-    val buf = ByteBuffer.allocate(export.lRecl)
+    val buf = ByteBuffer.allocate(`export`.lRecl)
     rows.forEach { row =>
       buf.clear()
       MVSBinaryRowEncoder.toBinary(row, mvsEncoders, buf) match {
         case result if result.exitCode == 0 =>
           rowsCounter += 1
-          export.appendBytes(buf.array())
+          `export`.appendBytes(buf.array())
         case err =>
           // Print helpful error message containing schema, row, encoder
           val sb = new StringBuilder
@@ -82,21 +82,21 @@ class LocalFileExporter extends FileExporter with Logging {
     val queryLRECL = mvsEncoders.map(_.size).sum
     logger.info(
       s"""BINARY EXPORT
-         |OUTPUT FILE LRECL = ${export.lRecl}
-         |OUTPUT FILE RECFM = ${export.recfm}
+         |OUTPUT FILE LRECL = ${`export`.lRecl}
+         |OUTPUT FILE RECFM = ${`export`.recfm}
          |QUERY SCHEMA LRECL = $queryLRECL
          |""".stripMargin)
 
-    if (export.recfm != "FB")
-      throw new UnsupportedOperationException(s"Unsupported file RECFM: ${export.recfm}")
+    if (`export`.recfm != "FB")
+      throw new UnsupportedOperationException(s"Unsupported file RECFM: ${`export`.recfm}")
 
-    if (queryLRECL > export.lRecl)
+    if (queryLRECL > `export`.lRecl)
       throw new RuntimeException(s"Output file LRECL is shorter than in provided schema. " +
-        s"Output file LRECL = ${export.lRecl}, schema LRECL = $queryLRECL.")
+        s"Output file LRECL = ${`export`.lRecl}, schema LRECL = $queryLRECL.")
 
     if (!isOpen) {
       // export is closed, just not export
-      return Result.Success
+      return
     }
 
     val nCols = bqSchema.size()
@@ -152,15 +152,15 @@ class LocalFileExporter extends FileExporter with Logging {
             i => lineBuf.append(java.util.Objects.toString(row.get(i).getValue,""))
           }
           val line = lineBuf.toSeq.mkString("|")
-          val lineToExport = if (line.length < export.lRecl) {
-            val rpad = export.lRecl - line.length
+          val lineToExport = if (line.length < `export`.lRecl) {
+            val rpad = `export`.lRecl - line.length
             line + (" " * rpad)
           } else line
 
-          val bytes = StringToBinaryEncoder(Ebcdic, export.lRecl)
-            .encode(lineToExport.substring(0, export.lRecl-1))
+          val bytes = StringToBinaryEncoder(Ebcdic, `export`.lRecl)
+            .encode(lineToExport.substring(0, `export`.lRecl-1))
 
-          export.appendBytes(bytes)
+          `export`.appendBytes(bytes)
           processedRows += 1
 
           if (rowsCount > halfOfMili  && processedRows % halfOfMili == 0) {

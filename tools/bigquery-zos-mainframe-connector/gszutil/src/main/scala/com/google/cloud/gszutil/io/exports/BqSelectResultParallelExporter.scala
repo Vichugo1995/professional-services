@@ -84,7 +84,7 @@ class BqSelectResultParallelExporter(cfg: ExportConfig,
             var rowsProcessed: Long = 0
             val totalPartitionRows = iterator.endIndex - iterator.startIndex
 
-            while (iterator.hasNext()) {
+            while (iterator.hasNext) {
               exporter.exportData(iterator.next(), tableSchema, sp.encoders) match {
                 case Result(_, 0, rowsWritten, _, _) =>
                   rowsProcessed = rowsProcessed + rowsWritten
@@ -93,6 +93,7 @@ class BqSelectResultParallelExporter(cfg: ExportConfig,
                   if (rowsProcessed > totalPartitionRows)
                     throw new IllegalStateException(s"$partitionName Internal issue, to many rows exported!!!")
                 case Result(_, 1, _, msg, _) => throw new IllegalStateException(s"$partitionName Failed when encoding values to file: $msg")
+                case _ => throw new IllegalStateException(s"$partitionName Failed when encoding values to file")
               }
             }
             Result(activityCount = rowsProcessed)
@@ -123,7 +124,12 @@ class BqSelectResultParallelExporter(cfg: ExportConfig,
       .map(e => (e, retryableOnError(e.endIfOpen(), s"Resource closing for $e. ")))
       .filter(r => r._2.isLeft)
 
-    if(errors.nonEmpty)
-      throw new IllegalStateException(s"Resources [${errors.map(_._1)}] were not closed properly!", errors.head._2.left.get)
+    if (errors.nonEmpty) {
+      errors.head._2 match {
+        case Left(e) =>
+          throw new IllegalStateException(s"Resources [${errors.map(_._1)}] were not closed properly!", e)
+        case _ =>
+      }
+    }
   }
 }
