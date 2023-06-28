@@ -16,6 +16,7 @@
 
 package com.google.cloud.imf.grecv
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bqsh.GsUtilConfig
 import com.google.cloud.bqsh.cmd.Cp
 import com.google.cloud.gszutil.io.ZDataSet
@@ -43,11 +44,11 @@ class CpSpec2ITSpec extends AnyFlatSpec with BeforeAndAfterAll {
   val TestProject = sys.env("PROJECT")
   val TestDataset = sys.env("DATASET")
   val trustCertCollectionFilePath = sys.env("TRUST_CERT_COLLECTION_FILE_PATH")
-  val bqFunc = (x: String, y: String, _: ByteString) => Services.bigQuery(x, y, Services.storageCredentials())
-  val bqStorageFunc = (_: ByteString) => Services.bigQueryStorage(Services.storageCredentials())
+  val bqFunc = (x: String, y: String, _: ByteString) => Services.bigQuery(x, y, GoogleCredentials.getApplicationDefault())
+  val bqStorageFunc = (_: ByteString) => Services.bigQueryStorage(GoogleCredentials.getApplicationDefault())
 
   def server(cfg: GRecvConfig): Future[GRecvServer] = Future {
-    val s = new GRecvServer(cfg, _ => Services.storage(), bqStorageFunc, _ => Services.storageApi(Services.storageCredentials()), bqFunc)
+    val s = new GRecvServer(cfg, _ => Services.storage(GoogleCredentials.getApplicationDefault()), bqStorageFunc, _ => Services.storageApi(GoogleCredentials.getApplicationDefault()), bqFunc)
     s.start(block = false)
     s
   }

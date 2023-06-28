@@ -16,6 +16,7 @@
 
 package com.google.cloud.bqsh
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.RetryOption
 import com.google.cloud.bigquery.{FieldValue, JobId, QueryJobConfiguration}
 import com.google.cloud.bqsh.cmd.Load
@@ -40,7 +41,7 @@ class LoadITSpec extends AnyFlatSpec with BeforeAndAfterAll {
   val zos = Linux
   val table = "dataset.loadTestTable"
   val tableStats = "STATS_TABLE_TEST"
-  val bq = Services.bigQuery(projectId, location, Services.bigqueryCredentials())
+  val bq = Services.bigQuery(projectId, location, GoogleCredentials.getApplicationDefault())
 
   override def beforeAll(): Unit = {
     val schema = LogTable.schema
@@ -146,7 +147,7 @@ class LoadITSpec extends AnyFlatSpec with BeforeAndAfterAll {
   }
 
   def uploadToStorage(bytes: Array[Byte], name: String) = {
-    val storage = Services.storage()
+    val storage = Services.storage(GoogleCredentials.getApplicationDefault())
     val blobId = BlobId.of(bucket, name)
     storage.create(BlobInfo.newBuilder(blobId).build(), bytes)
   }

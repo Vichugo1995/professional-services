@@ -39,7 +39,7 @@ class AvroRowsRetryableIteratorSpec extends AnyFlatSpec {
 
     val iterator = new AvroRowsRetryableIterator(serverStreaming, request)
     assert(iterator.hasNext)
-    assert(iterator.next.eq(response))
+    assert(iterator.next().eq(response))
     assert(!iterator.hasNext)
   }
 
@@ -86,7 +86,7 @@ class AvroRowsRetryableIteratorSpec extends AnyFlatSpec {
 
     val iterator = new AvroRowsRetryableIterator(serverStreaming, request, 1)
     iterator.consumed(1)
-    assertThrows[IllegalStateException](iterator.next)
+    assertThrows[IllegalStateException](iterator.next())
     Mockito.verify(serverStream, Mockito.times(1)).cancel()
 
     val expectedArgWithOffset = request.toBuilder.setOffset(1).build()

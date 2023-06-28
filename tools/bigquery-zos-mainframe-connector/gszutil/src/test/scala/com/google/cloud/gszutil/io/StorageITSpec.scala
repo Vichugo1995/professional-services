@@ -32,6 +32,7 @@
 
 package com.google.cloud.gszutil.io
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bqsh.ScpConfig
 import com.google.cloud.bqsh.cmd.Scp
 import com.google.cloud.imf.grecv.server.GRecvServerListener
@@ -45,7 +46,7 @@ import java.nio.charset.StandardCharsets
 import scala.util.Random
 
 class StorageITSpec extends AnyFlatSpec {
-  val gcs = Services.storage()
+  val gcs = Services.storage(GoogleCredentials.getApplicationDefault())
   val bucket = sys.env("BUCKET")
   val zos: MVS = {
     val z = Util.zProvider
@@ -60,7 +61,7 @@ class StorageITSpec extends AnyFlatSpec {
   }
 
   "gcs" should "serve gzip" in {
-    val lowLevelApi = Services.storageApi(Services.storageCredentials())
+    val lowLevelApi = Services.storageApi(GoogleCredentials.getApplicationDefault())
     val name = "test1.gz"
     val obj = Scp.openGcsUri(gcs, s"gs://$bucket/$name", 8, compress = true)
     val s0 = Random.alphanumeric.take(32).toString()

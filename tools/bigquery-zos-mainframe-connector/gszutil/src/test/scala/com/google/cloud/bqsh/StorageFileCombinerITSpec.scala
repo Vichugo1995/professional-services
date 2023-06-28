@@ -16,6 +16,7 @@
 
 package com.google.cloud.bqsh
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.gszutil.io.exports.StorageFileCompose
 import com.google.cloud.imf.util.Services
 import com.google.cloud.storage.{BlobId, BlobInfo, Storage}
@@ -34,7 +35,7 @@ class StorageFileCombinerITSpec extends AnyFlatSpec with BeforeAndAfterEach {
   val targetUri = new URI(TargetUrl)
   val sourceUri = new URI(SourceUrl)
 
-  val gcs = Services.storage()
+  val gcs = Services.storage(GoogleCredentials.getApplicationDefault())
   val service = new StorageFileCompose(gcs)
 
   override protected def beforeEach(): Unit = {

@@ -16,6 +16,7 @@
 
 package com.google.cloud.bqsh
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.RetryOption
 import com.google.cloud.bigquery.JobStatistics.QueryStatistics
 import com.google.cloud.bigquery.{FieldValue, FieldValueList, JobId, QueryJobConfiguration}
@@ -38,7 +39,7 @@ class QueryITSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAfter
   val tableStats = "STATS_TABLE_TEST"
   val location = sys.env.getOrElse("LOCATION", "US")
   val zos = Linux
-  val bq = Services.bigQuery(projectId, location, Services.bigqueryCredentials())
+  val bq = Services.bigQuery(projectId, location, GoogleCredentials.getApplicationDefault())
 
   override def beforeAll(): Unit = {
     val schema = LogTable.schema

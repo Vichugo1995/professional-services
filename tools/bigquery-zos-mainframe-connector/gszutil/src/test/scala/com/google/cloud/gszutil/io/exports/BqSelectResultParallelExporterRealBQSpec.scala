@@ -16,6 +16,7 @@
 
 package com.google.cloud.gszutil.io.exports
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.{JobId, QueryJobConfiguration}
 import com.google.cloud.bqsh.{BQ, ExportConfig}
 import com.google.cloud.gszutil.{CopyBook, SchemaProvider}
@@ -44,7 +45,7 @@ class BqSelectResultParallelExporterRealBQSpec extends AnyFlatSpec {
     val location = "US"
     val defaultRecordLength = 80
 
-    val bigQuery = Services.bigQuery(projectId, location, Services.bigqueryCredentials())
+    val bigQuery = Services.bigQuery(projectId, location, GoogleCredentials.getApplicationDefault())
 
     val jobId = JobId.newBuilder()
       .setProject(projectId)
@@ -136,7 +137,7 @@ class BqSelectResultParallelExporterRealBQSpec extends AnyFlatSpec {
     val location = "US"
     val defaultRecordLength = 80
 
-    val bigQuery = Services.bigQuery(projectId, location, Services.bigqueryCredentials())
+    val bigQuery = Services.bigQuery(projectId, location, GoogleCredentials.getApplicationDefault())
 
     val jobId = JobId.newBuilder()
       .setProject(projectId)
@@ -165,7 +166,7 @@ class BqSelectResultParallelExporterRealBQSpec extends AnyFlatSpec {
         |""".stripMargin)
 
     var filesToCompose = Seq.empty[String]
-    val gcs = Services.storage(Services.storageCredentials())
+    val gcs = Services.storage(GoogleCredentials.getApplicationDefault())
     val targetFile = BlobId.of("boxwood-sector-246122-test-storage", "EXPORT/r1.on.o1")
 
     //cleanup

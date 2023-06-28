@@ -16,6 +16,7 @@
 
 package com.google.cloud.bqsh
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.RetryOption
 import com.google.cloud.bigquery.InsertAllRequest.RowToInsert
 import com.google.cloud.bigquery.{InsertAllRequest, JobId, QueryJobConfiguration, Table, TableId}
@@ -51,10 +52,10 @@ class ExportRemoteITSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeA
   val chain = sys.env("CHAIN")
   val trustCertCollectionFilePath = sys.env("TRUST_CERT_COLLECTION_FILE_PATH")
 
-  val bqFunc = (project: String, location: String, _ : ByteString) => Services.bigQuery(project, location, Services.bigqueryCredentials())
-  val bqStorageFunc = (_ : ByteString) => Services.bigQueryStorage(Services.bigqueryCredentials())
+  val bqFunc = (project: String, location: String, _ : ByteString) => Services.bigQuery(project, location, GoogleCredentials.getApplicationDefault())
+  val bqStorageFunc = (_ : ByteString) => Services.bigQueryStorage(GoogleCredentials.getApplicationDefault())
   def server(cfg: GRecvConfig): Future[GRecvServer] = Future{
-    val s = new GRecvServer(cfg, _ => Services.storage(), bqStorageFunc,  _ => Services.storageApi(Services.storageCredentials()), bqFunc)
+    val s = new GRecvServer(cfg, _ => Services.storage(GoogleCredentials.getApplicationDefault()), bqStorageFunc,  _ => Services.storageApi(GoogleCredentials.getApplicationDefault()), bqFunc)
     s.start(block = false)
     s
   }
@@ -103,13 +104,13 @@ class ExportRemoteITSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeA
       |""".stripMargin
 
   val outFile = "TEST.DUMMY"
-  val gcs = Services.storage()
+  val gcs = Services.storage(GoogleCredentials.getApplicationDefault())
   val zos = Linux
 
   val bq = Services.bigQuery(TestProject, "US",
-    Services.bigqueryCredentials())
+    GoogleCredentials.getApplicationDefault())
 
-  val storageApi = Services.bigQueryStorage(Services.bigqueryCredentials())
+  val storageApi = Services.bigQueryStorage(GoogleCredentials.getApplicationDefault())
 
   val tableId = TableId.of("dataset", tableName)
 

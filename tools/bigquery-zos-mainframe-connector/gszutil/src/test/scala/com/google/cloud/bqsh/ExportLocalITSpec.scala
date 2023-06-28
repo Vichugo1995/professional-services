@@ -16,6 +16,7 @@
 
 package com.google.cloud.bqsh
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.RetryOption
 import com.google.cloud.bigquery.{JobId, QueryJobConfiguration}
 import com.google.cloud.bqsh.cmd.Export
@@ -53,7 +54,7 @@ class ExportLocalITSpec extends AnyFlatSpec with BeforeAndAfterAll {
   override protected def beforeAll(): Unit = {
 
     val bq = Services.bigQuery(projectId, location,
-      Services.bigqueryCredentials())
+      GoogleCredentials.getApplicationDefault())
 
     // create a table with one column of each type
     val sql1 =

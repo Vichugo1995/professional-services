@@ -16,6 +16,7 @@
 
 package com.google.cloud.imf.gzos
 
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.imf.util.Services
 import com.google.cloud.storage.{BlobId, BlobInfo, Storage}
 import org.scalatest.BeforeAndAfter
@@ -26,7 +27,7 @@ import scala.util.Try
 
 class CLoudDataSetE2EITSpec extends AnyFlatSpec with BeforeAndAfter {
 
-  val gcs = Services.storage(Services.storageCredentials())
+  val gcs = Services.storage(GoogleCredentials.getApplicationDefault())
 
   /*
     This test requires following environment variables:
@@ -73,7 +74,10 @@ class CLoudDataSetE2EITSpec extends AnyFlatSpec with BeforeAndAfter {
     val dataSetInfo = DataSetInfo(gdgBaseDsn)
     val result = Try(CloudDataSet.readCloudDD(gcs, "INFILE", dataSetInfo)).toEither
     assert(result.isLeft)
-    assert(result.left.get.isInstanceOf[RuntimeException])
+    result match {
+      case Left(value) => assert(value.isInstanceOf[RuntimeException])
+      case _ =>
+    }
   }
 
   it should "Standard bucket: return cloudReader for object from standard bucket when pds is false" in {
@@ -106,7 +110,10 @@ class CLoudDataSetE2EITSpec extends AnyFlatSpec with BeforeAndAfter {
     val dataSetInfo = DataSetInfo(gdgBaseDsn)
     val result = Try(CloudDataSet.readCloudDD(gcs, "ambiguousDD", dataSetInfo)).toEither
     assert(result.isLeft)
-    assert(result.left.get.isInstanceOf[RuntimeException])
+    result match {
+      case Left(value) => assert(value.isInstanceOf[RuntimeException])
+      case _ =>
+    }
   }
 
   it should "GDG bucket: return cloudReader for object from gdg bucket when version isn't specified (base gdg)" in {
